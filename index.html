@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shreshtha OS</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap">
+<style>
+/* Layout idea: a Linux desktop. GRUB, kernel log and login lead into a tiling-flavoured
+   window manager: top panel with workspaces and tray, dock at the bottom, overlapping windows.
+   Every piece of the portfolio is a file, a command or an app. */
+:root{
+  --acc:#3dff8f; --acc-dim:color-mix(in srgb,var(--acc) 22%,transparent);
+  --bg:#07090a; --wall:#0b0f10; --panel:#0d1214; --win:#0f1517; --win-2:#141c1f; --line:#1f2a2e; --fg:#cfd8d3; --muted:#7c8a86;
+  --red:#ff5f6d; --yellow:#ffd166; --blue:#5cc8ff; --magenta:#ff7ad9; --orange:#ff9f43;
+  --f:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f);font-size:13.5px;overflow:hidden;-webkit-font-smoothing:antialiased}
+a{color:var(--acc)} button{font-family:inherit} ::selection{background:var(--acc);color:#000}
+:focus-visible{outline:1px solid var(--acc);outline-offset:2px}
+.scan::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
+
+/* ---------- boot ---------- */
+#boot{position:fixed;inset:0;z-index:500;background:#000;color:#bbb;display:flex;flex-direction:column}
+#boot .skip{position:absolute;right:16px;bottom:14px;color:#666;font-size:12px}
+.grub{margin:auto;width:min(640px,92vw);border:1px solid #888;padding:2px}
+.grub h1{margin:0;padding:8px 12px;text-align:center;font-size:13px;font-weight:400;color:#ddd}
+.grub ul{list-style:none;margin:0;padding:8px 0;border-top:1px solid #888;min-height:150px}
+.grub li{padding:2px 12px}
+.grub li.sel{background:#ddd;color:#000}
+.grub p{margin:0;padding:8px 12px;border-top:1px solid #888;font-size:12px;color:#999}
+.klog{padding:14px 18px;font-size:12.5px;line-height:1.55;white-space:pre-wrap;overflow:hidden}
+.ok{color:var(--acc)} .dim{color:#666}
+.login{margin:auto;text-align:center;display:grid;gap:14px;justify-items:center}
+.login .clock{font-size:clamp(54px,10vw,96px);font-weight:800;letter-spacing:-.04em;color:#e8efe9}
+.login .date{color:var(--muted);margin-top:-10px}
+.avatar{width:84px;height:84px;border-radius:50%;border:2px solid var(--acc);display:grid;place-items:center;font-weight:800;font-size:28px;color:var(--acc);background:var(--acc-dim)}
+.pw{width:260px;border:1px solid var(--line);background:#0c1113;padding:10px 12px;text-align:left;color:var(--fg);min-height:40px}
+.pw .cur{display:inline-block;width:8px;height:16px;background:var(--acc);vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- desktop ---------- */
+#desk{position:fixed;inset:30px 0 0 0;background:radial-gradient(900px 600px at 75% 40%, color-mix(in srgb,var(--acc) 7%,transparent), transparent 65%),linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px) 0 0/32px 32px,linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px) 0 0/32px 32px,var(--wall)}
+#rain{position:absolute;inset:0;width:100%;height:100%;opacity:.0;transition:opacity .6s;pointer-events:none}
+.w-matrix #rain{opacity:.35}
+.w-plain #desk{background:var(--wall)}
+.logo{position:absolute;right:4%;top:50%;transform:translateY(-55%);margin:0;color:color-mix(in srgb,var(--acc) 55%,#000);font-size:clamp(5px,.78vw,11px);line-height:1.05;pointer-events:none;user-select:none;text-align:left}
+.logo-cap{position:absolute;right:4%;bottom:90px;text-align:right;color:var(--muted);font-size:12px;line-height:1.7;pointer-events:none}
+.logo-cap b{color:var(--fg)}
+.icons{position:absolute;left:12px;top:12px;display:grid;gap:4px;z-index:1}
+.dicon{width:92px;padding:8px 4px 6px;border:1px solid transparent;background:none;color:var(--fg);text-align:center;cursor:pointer;font-size:11.5px;display:grid;justify-items:center;gap:6px;border-radius:4px}
+.dicon:hover,.dicon:focus-visible{background:rgba(255,255,255,.05);border-color:var(--line)}
+.dicon svg{width:34px;height:34px}
+
+/* top panel */
+#panel{position:fixed;top:0;left:0;right:0;height:30px;z-index:300;background:var(--panel);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:0 8px;font-size:12px;user-select:none}
+.pbtn{background:none;border:0;color:var(--fg);padding:4px 8px;cursor:pointer;border-radius:3px;font-size:12px;display:flex;align-items:center;gap:6px}
+.pbtn:hover{background:rgba(255,255,255,.06)}
+.brandbtn b{color:var(--acc)}
+.ws{display:flex;gap:3px}
+.ws button{width:24px;height:20px;border:1px solid var(--line);background:none;color:var(--muted);cursor:pointer;font-size:11px;border-radius:2px;position:relative}
+.ws button.on{background:var(--acc);color:#000;border-color:var(--acc);font-weight:700}
+.ws button.has::after{content:"";position:absolute;bottom:1px;left:50%;width:3px;height:3px;margin-left:-1.5px;background:currentColor;border-radius:50%}
+.ptitle{flex:1;text-align:center;color:var(--muted);overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ptitle b{color:var(--fg);font-weight:500}
+.tray{display:flex;align-items:center;gap:12px;color:var(--muted)}
+.tray b{color:var(--fg);font-weight:500}
+#cpu{width:60px;height:16px;display:block}
+
+/* dock */
+#dock{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:290;display:flex;gap:6px;padding:6px;background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);border-radius:10px;backdrop-filter:blur(8px);max-width:calc(100vw - 16px);overflow-x:auto}
+.dk{position:relative;width:42px;height:42px;border:0;border-radius:8px;background:var(--win-2);color:var(--fg);cursor:pointer;display:grid;place-items:center;flex:none}
+.dk:hover{background:var(--acc-dim);color:var(--acc)}
+.dk svg{width:22px;height:22px}
+.dk.run::after{content:"";position:absolute;bottom:2px;left:50%;width:14px;height:2px;margin-left:-7px;background:var(--acc);border-radius:2px}
+.dk .tip{position:absolute;bottom:52px;left:50%;transform:translateX(-50%);background:#000;border:1px solid var(--line);padding:3px 7px;font-size:11px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s}
+.dk:hover .tip,.dk:focus-visible .tip{opacity:1}
+
+/* windows */
+.win{position:absolute;display:flex;flex-direction:column;background:var(--win);border:1px solid var(--line);box-shadow:0 18px 50px rgba(0,0,0,.55);min-width:280px;min-height:160px;border-radius:6px;overflow:hidden;animation:pop .16s ease-out}
+@keyframes pop{from{transform:scale(.97);opacity:0}}
+.win.focus{border-color:color-mix(in srgb,var(--acc) 60%,var(--line));box-shadow:0 22px 60px rgba(0,0,0,.65),0 0 0 1px color-mix(in srgb,var(--acc) 20%,transparent)}
+.win.max{border-radius:0}
+.win.hide{display:none}
+.tbar{height:30px;flex:none;display:flex;align-items:center;gap:8px;padding:0 6px 0 10px;background:var(--win-2);border-bottom:1px solid var(--line);cursor:default;user-select:none;touch-action:none}
+.tbar svg{width:14px;height:14px;color:var(--acc);flex:none}
+.tbar b{flex:1;font-weight:500;font-size:12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--muted)}
+.win.focus .tbar b{color:var(--fg)}
+.wb{display:flex;gap:2px}
+.wb button{width:26px;height:22px;border:0;background:none;color:var(--muted);cursor:pointer;border-radius:3px;font-size:13px;line-height:1}
+.wb button:hover{background:rgba(255,255,255,.08);color:var(--fg)}
+.wb button.x:hover{background:var(--red);color:#000}
+.wbody{flex:1;min-height:0;overflow:auto;position:relative}
+.grip{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;touch-action:none;background:linear-gradient(135deg,transparent 50%,var(--line) 50% 60%,transparent 60% 70%,var(--line) 70% 80%,transparent 80%)}
+
+/* terminal */
+.term{background:#050807;color:#cfe3d6;font-size:13.5px;line-height:1.5;padding:10px 12px;min-height:100%;cursor:text}
+.term pre{margin:0;font:inherit;white-space:pre-wrap;word-break:break-word}
+.tline{display:flex;gap:8px;align-items:baseline}
+.tline input{flex:1;min-width:40px;background:transparent;border:0;outline:0;color:#fff;font:inherit;caret-color:var(--acc);padding:0}
+.c-acc{color:var(--acc)} .c-b{color:var(--blue)} .c-y{color:var(--yellow)} .c-r{color:var(--red)} .c-m{color:var(--magenta)} .c-o{color:var(--orange)} .c-d{color:var(--muted)} .c-w{color:#fff;font-weight:700}
+.bar{display:inline-block;height:10px;background:var(--acc);vertical-align:0}
+
+/* files */
+.fm{display:grid;grid-template-columns:170px 1fr;height:100%}
+.fm nav{border-right:1px solid var(--line);padding:8px;display:grid;align-content:start;gap:2px;background:var(--win-2)}
+.fm nav button{text-align:left;background:none;border:0;color:var(--muted);padding:6px 8px;cursor:pointer;border-radius:3px;font-size:12.5px}
+.fm nav button.on,.fm nav button:hover{background:var(--acc-dim);color:var(--fg)}
+.fm .main{display:flex;flex-direction:column;min-width:0}
+.crumb{padding:8px 12px;border-bottom:1px solid var(--line);color:var(--muted);font-size:12px}
+.crumb b{color:var(--acc);font-weight:500}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;padding:12px}
+.fi{border:1px solid transparent;background:none;color:var(--fg);padding:10px 4px 8px;border-radius:4px;cursor:pointer;display:grid;justify-items:center;gap:6px;font-size:11.5px;word-break:break-all}
+.fi:hover,.fi:focus-visible{background:rgba(255,255,255,.04);border-color:var(--line)}
+.fi svg{width:36px;height:36px}
+
+/* editor */
+.ed{display:flex;flex-direction:column;height:100%;background:#0a0f10}
+.ed .code{flex:1;overflow:auto;display:grid;grid-template-columns:auto 1fr;font-size:13px;line-height:1.6}
+.ed .ln{padding:8px 10px 8px 12px;text-align:right;color:#3d4b47;user-select:none;border-right:1px solid var(--line);white-space:pre}
+.ed .tx{padding:8px 14px;white-space:pre-wrap;word-break:break-word;margin:0;font:inherit}
+.ed .status{display:flex;justify-content:space-between;gap:8px;background:var(--acc);color:#000;font-size:11.5px;font-weight:700;padding:3px 10px}
+.ed .status span:last-child{font-weight:400}
+.h1{color:var(--acc);font-weight:700} .h2{color:var(--blue);font-weight:700} .li{color:var(--yellow)} .kw{color:var(--magenta)} .str{color:var(--orange)} .cm{color:var(--muted);font-style:italic}
+
+/* monitor */
+.mon{padding:10px 12px;font-size:12.5px}
+.meters{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;margin-bottom:10px}
+.meter{display:grid;grid-template-columns:40px 1fr 52px;gap:8px;align-items:center}
+.meter .track{height:10px;border:1px solid var(--line);position:relative}
+.meter .fill{position:absolute;inset:0 auto 0 0;background:var(--acc);transition:width .6s}
+.mon table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.mon th{text-align:left;background:var(--acc);color:#000;font-weight:700;padding:3px 6px}
+.mon td{padding:3px 6px;border-bottom:1px solid #121a1c;white-space:nowrap}
+.mon tr:hover td{background:var(--acc-dim)}
+.mon .foot{margin-top:8px;color:var(--muted)}
+.mon .foot b{color:#000;background:var(--fg);padding:0 4px;margin-right:4px}
+
+/* doc-like apps */
+.doc{padding:18px 22px;font-size:14px;line-height:1.65;font-family:var(--f)}
+.doc h2{margin:0 0 4px;font-size:20px;color:var(--acc)}
+.doc .sub{color:var(--muted);margin:0 0 14px}
+.doc p{margin:0 0 10px}
+.it{padding-bottom:12px;margin-bottom:12px;border-bottom:1px dashed var(--line)} .it:last-child{border:0;margin:0;padding:0}
+.ih{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline} .ih h4{margin:0;font-size:14.5px;color:#fff}
+.when{font-size:12px;color:var(--muted)} .org{margin:2px 0 6px;color:var(--muted);font-size:13px}
+.doc ul{margin:0;padding-left:18px} .doc li{margin-bottom:4px}
+.pill{font-size:10.5px;color:var(--acc);border:1px solid var(--acc);padding:0 5px;margin-left:6px;vertical-align:1px}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px} .chips span{font-size:11.5px;border:1px solid var(--line);padding:2px 7px;color:var(--fg)}
+.kit{display:grid;grid-template-columns:140px 1fr;gap:6px 12px} .kit dt{color:var(--yellow);padding-top:3px} .kit dd{margin:0}
+.lines{display:grid;gap:4px}
+.act,.btn{display:inline-block;font-size:12.5px;border:1px solid var(--acc);color:var(--acc);background:transparent;padding:7px 12px;text-decoration:none;cursor:pointer;margin:6px 8px 0 0;border-radius:3px}
+.btn.solid{background:var(--acc);color:#000;font-weight:700}
+.form{display:grid;gap:10px;margin-top:6px}
+.form label{display:grid;gap:4px;color:var(--muted);font-size:12px}
+.form input,.form textarea{background:#080c0d;border:1px solid var(--line);color:var(--fg);font:inherit;padding:8px 10px;border-radius:3px}
+.form textarea{min-height:110px;resize:vertical}
+.opts{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 16px}
+.sw{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);cursor:pointer}
+.sw.on{border-color:#fff;box-shadow:0 0 0 2px #000 inset}
+.seg button{background:none;border:1px solid var(--line);color:var(--muted);padding:6px 12px;cursor:pointer}
+.seg button.on{background:var(--acc);color:#000;border-color:var(--acc);font-weight:700}
+
+/* github */
+.gh{display:grid;grid-template-columns:240px 1fr;gap:22px;padding:20px 22px;font-size:13.5px;line-height:1.6}
+.gh-side .av{width:150px;height:150px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:48px;font-weight:800;color:var(--acc);background:radial-gradient(circle at 30% 30%,var(--acc-dim),transparent 70%),#0a0f10}
+.gh-side h2{margin:12px 0 0;font-size:20px;color:#fff}
+.gh-side .handle{color:var(--muted);font-size:15px}
+.gh-side p{margin:10px 0}
+.gh-side .meta{display:grid;gap:4px;color:var(--muted);font-size:12.5px;margin-top:10px}
+.gh-side .meta b{color:var(--fg);font-weight:500}
+.gh-readme{border:1px solid var(--line);border-radius:6px;padding:14px 16px;margin-bottom:16px}
+.gh-readme .fn{color:var(--muted);font-size:11.5px;margin-bottom:8px}
+.gh-readme h3{margin:0 0 6px;color:#fff;font-size:17px}
+.gh-readme p{margin:0 0 8px}
+.pins{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.pin{border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:grid;gap:6px;align-content:start}
+.pin b{color:var(--blue);font-weight:600}
+.pin .d{color:var(--muted);font-size:12.5px}
+.pin .lang{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.pin .lang i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.gh-h{font-size:13px;color:var(--muted);margin:0 0 8px}
+@media (max-width:760px){.gh{grid-template-columns:1fr}.gh-side .av{width:96px;height:96px;font-size:32px}}
+
+/* launcher, menu, toast */
+#launch{position:fixed;inset:30px 0 0 0;z-index:400;background:rgba(3,5,6,.82);backdrop-filter:blur(6px);display:grid;place-items:start center;padding-top:8vh}
+#launch[hidden]{display:none}
+#launch input{width:min(520px,90vw);background:#0a0f10;border:1px solid var(--acc);color:#fff;font:inherit;font-size:16px;padding:12px 14px;border-radius:6px;outline:none}
+.apps{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;width:min(640px,92vw);margin-top:22px}
+.apps button{background:var(--win-2);border:1px solid var(--line);color:var(--fg);padding:14px 6px;border-radius:8px;cursor:pointer;display:grid;justify-items:center;gap:8px;font-size:12px}
+.apps button:hover,.apps button:focus-visible{border-color:var(--acc);color:var(--acc)}
+.apps svg{width:28px;height:28px}
+#ctx{position:fixed;z-index:450;background:var(--panel);border:1px solid var(--line);min-width:210px;padding:4px;box-shadow:0 10px 30px rgba(0,0,0,.5);border-radius:4px}
+#ctx[hidden]{display:none}
+#ctx button{display:flex;justify-content:space-between;width:100%;text-align:left;background:none;border:0;color:var(--fg);padding:7px 10px;cursor:pointer;font-size:12.5px;border-radius:3px}
+#ctx button:hover{background:var(--acc);color:#000}
+#ctx button span{color:var(--muted)} #ctx button:hover span{color:#000}
+#ctx hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+#toasts{position:fixed;right:12px;top:42px;z-index:350;display:grid;gap:8px;width:min(330px,calc(100vw - 24px))}
+.toast{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--acc);padding:10px 12px;font-size:12.5px;box-shadow:0 10px 30px rgba(0,0,0,.4);animation:tin .25s ease-out}
+.toast b{display:block;color:#fff;margin-bottom:2px}
+@keyframes tin{from{transform:translateX(30px);opacity:0}}
+#matrix{position:fixed;inset:0;z-index:600;background:#000;display:none}
+#matrix.on{display:block}
+
+@media (max-width:760px){
+  .ptitle,.tray .hide-s{display:none}
+  .logo{right:50%;transform:translate(50%,-80%);font-size:4.2px}
+  .logo-cap{right:16px;left:16px;text-align:center;bottom:84px}
+  .icons{grid-template-columns:repeat(4,1fr);right:12px}
+  .dicon{width:auto}
+  .win{left:0!important;top:0!important;width:100%!important;height:calc(100% - 66px)!important;border-radius:0}
+  .grip{display:none}
+  .fm{grid-template-columns:1fr}.fm nav{display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .kit{grid-template-columns:1fr;gap:2px}.kit dd{margin-bottom:8px}
+  .meters{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="boot" aria-hidden="true"><span class="skip">click or press Esc to skip</span></div>
+<canvas id="matrix" aria-hidden="true"></canvas>
+
+<header id="panel">
+  <button class="pbtn brandbtn" id="brand" type="button" aria-label="Open app launcher"><b>●</b> shreshtha-os</button>
+  <div class="ws" id="ws" aria-label="Workspaces"></div>
+  <div class="ptitle" id="ptitle"></div>
+  <div class="tray">
+    <a class="pbtn hide-s" href="" id="ghlink" target="_blank" rel="noopener" style="text-decoration:none"></a>
+    <span class="hide-s">cpu <canvas id="cpu" width="60" height="16"></canvas></span>
+    <span class="hide-s">net <b>▲▼</b></span>
+    <span class="hide-s">bat <b>100%</b></span>
+    <b id="clock"></b>
+  </div>
+</header>
+
+<main id="desk" aria-label="Desktop">
+  <canvas id="rain"></canvas>
+  <pre class="logo" id="logo" aria-hidden="true"></pre>
+  <div class="logo-cap"><b>Shreshtha OS 26.11</b><br>Shreshtha Soni · full-stack developer · Jaipur<br><span id="capgh"></span><br>right-click the desktop · Ctrl+Alt+T for a terminal</div>
+  <nav class="icons" id="icons" aria-label="Desktop shortcuts"></nav>
+</main>
+<nav id="dock" aria-label="Dock"></nav>
+
+<div id="launch" hidden><div style="display:grid;justify-items:center"><input id="lq" placeholder="Search apps and files…" aria-label="Search apps"><div class="apps" id="apps"></div></div></div>
+<div id="ctx" hidden role="menu"></div>
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+const CV = {
+  name: "Shreshtha Soni",
+  nick: "Keshav",
+  title: "Full-stack developer",
+  line: "B.Tech CSE student at JECRC University, Jaipur. I build products and ship them to real users.",
+  about: [
+    "I'm Shreshtha Soni, Keshav to most people. I'm a B.Tech Computer Science student at JECRC University, Jaipur (2024 to 2028), and I like taking products all the way from idea to real users.",
+    "I've shipped an Android app to the Google Play Store, a school management ERP that schools use every day, and live websites for paying clients. I also did a paid, on-site full-stack internship at Tagshop.ai, an AI video startup.",
+    "I started in graphic design and video editing, so I care how a product looks as much as how it runs. Right now I'm sharpening my DSA and going deeper into machine learning. Away from the keyboard, I play classical flute."
+  ],
+  work: [
+    {role: "Full-Stack Developer Intern", org: "Tagshop.ai · AI UGC video platform · Paid, on-site", when: "Jun 2026 – Oct 2026", short: "Tagshop.ai",
+     bullets: ["Worked across the frontend and backend of a production AI video platform, shipping features and fixes used by live customers.",
+               "Mapped the platform's system architecture from its routing layer and wrote the engineering onboarding document with diagrams.",
+               "Debugged and fixed image-quality (blur) issues in the media rendering pipeline.",
+               "Analysed 411 subscription cancellations in Node.js and presented churn drivers to leadership."]},
+    {role: "Freelance Software Developer", org: "Self-employed · Jaipur", when: "2026 – now", short: "Freelance",
+     bullets: ["Built and launched the live test-booking website for Micro Path Labs: patient registration, test catalogue, slot scheduling and report tracking."]},
+    {role: "Business & Creative Manager", org: "Triambika Infotech Pvt. Ltd. · Jaipur", when: "Dec 2025 – May 2026", short: "Triambika",
+     bullets: ["Ran creative and client work for brands in India and Dubai: pitch decks, brand proposals, product videos and social content.",
+               "Built Python and prompt-based automation for content generation."]}
+  ],
+  projects: [
+    {name: "Galla", status: "Live on Google Play", tagline: "Business management app for small shop owners",
+     bullets: ["Designed, built and published the Android app, from closed testing to public release.", "Backend APIs and relational database, deployed on AWS."],
+     stack: ["Android", "REST APIs", "SQL", "AWS"]},
+    {name: "School Management ERP", status: "In production", tagline: "A lean alternative to bloated school ERPs",
+     bullets: ["Admin uploads student data once; it stays in sync in real time for teachers and parents.", "Role-based access and fast lookup by student name or roll number."],
+     stack: ["Python", "Next.js", "SQL", "Docker", "AWS"]},
+    {name: "Micro Path Labs", status: "Live", tagline: "Test-booking website for a pathology lab (client)",
+     bullets: ["Online test booking with slot scheduling and report tracking for a working lab."],
+     stack: ["React", "REST APIs", "SQL"]}
+  ],
+  skills: {
+    "Languages": ["C++", "Java", "Python", "JavaScript", "SQL"],
+    "CS fundamentals": ["DSA", "OOP", "DBMS", "Operating Systems", "Computer Networks"],
+    "Web": ["React", "Next.js", "Node.js", "Express", "FastAPI", "REST APIs", "Tailwind"],
+    "Data & cloud": ["MySQL", "PostgreSQL", "Supabase", "AWS", "Docker", "Git"],
+    "Learning now": ["Machine Learning", "scikit-learn", "pandas", "NumPy"],
+    "Design & AI media": ["Photoshop", "Illustrator", "Premiere Pro", "Kling AI", "ElevenLabs"]
+  },
+  contact: {email: "shreshtha.soni1111@gmail.com", linkedin: "linkedin.com/in/shreshtha-soni", github: "github.com/shreshtha-soni", place: "Jaipur, India · open to relocate"}
+};
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const R = {
+  about: () => CV.about.map(p => `<p>${esc(p)}</p>`).join(""),
+  work: () => CV.work.map(w => `<div class="it"><div class="ih"><h4>${esc(w.role)}</h4><span class="when">${esc(w.when)}</span></div><p class="org">${esc(w.org)}</p><ul>${w.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul></div>`).join(""),
+  projects: () => CV.projects.map(p => `<div class="it"><div class="ih"><h4>${esc(p.name)} <span class="pill">${esc(p.status)}</span></h4></div><p class="org">${esc(p.tagline)}</p><ul>${p.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul><div class="chips">${p.stack.map(s => `<span>${esc(s)}</span>`).join("")}</div></div>`).join(""),
+  skills: () => `<dl class="kit">${Object.entries(CV.skills).map(([k, v]) => `<dt>${esc(k)}</dt><dd class="chips">${v.map(s => `<span>${esc(s)}</span>`).join("")}</dd>`).join("")}</dl>`,
+  contact: () => `<p>Looking for software engineering internships. Happy to relocate or work on-site.</p><p class="lines"><span>${CV.contact.email}</span><a href="https://${CV.contact.linkedin}" target="_blank" rel="noopener">${CV.contact.linkedin}</a><a href="https://${CV.contact.github}" target="_blank" rel="noopener">${CV.contact.github}</a><span>${CV.contact.place}</span></p><p><a class="act" href="resume.pdf" target="_blank" rel="noopener">Open resume (PDF)</a> <button class="act copy" type="button">Copy email</button></p>`
+};
+function wireCopy(root) {
+  root.querySelectorAll(".copy").forEach(b => { if (b.dataset.w) return; b.dataset.w = 1; b.addEventListener("click", async () => {
+    const t = b.textContent; try { await navigator.clipboard.writeText(CV.contact.email); b.textContent = "Copied"; } catch { b.textContent = "Copy failed, select it above"; }
+    setTimeout(() => b.textContent = t, 1600);
+  }); });
+}
+
+const GH_USER = "shreshtha-soni"; // <- your GitHub username: change here only
+CV.contact.github = "github.com/" + GH_USER;
+const GH_URL = "https://github.com/" + GH_USER;
+(() => {
+const $ = s => document.querySelector(s);
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const store = {get(k, d) { try { const v = localStorage.getItem("sos-" + k); return v === null ? d : JSON.parse(v); } catch { return d; } }, set(k, v) { try { localStorage.setItem("sos-" + k, JSON.stringify(v)); } catch {} }};
+const H = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+
+/* ---------------- icons ---------------- */
+const IC = {
+  term:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="4" width="19" height="16" rx="2"/><path d="M6.5 9l3 3-3 3M12 15h5"/></svg>',
+  files:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2h8.5A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>',
+  mon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>',
+  mail:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3.5 6.5l8.5 6 8.5-6"/></svg>',
+  cv:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/><circle cx="12" cy="13" r="2"/><path d="M8.5 18c.6-1.6 2-2.4 3.5-2.4s2.9.8 3.5 2.4"/></svg>',
+  set:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>',
+  gh:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9.5"/><path d="M9 9.5l-2.5 2.5L9 14.5M15 9.5l2.5 2.5L15 14.5M13 8.5l-2 7"/></svg>',
+  git:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="9" r="2"/><path d="M6 7v10M18 11c0 4-6 3-11 7"/></svg>',
+  dir:'<svg viewBox="0 0 24 24" fill="currentColor" style="color:var(--acc)"><path opacity=".85" d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2h8.5A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/></svg>',
+  file:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="color:var(--fg)"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>',
+  pdf:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="color:var(--red)"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 15h2a1.5 1.5 0 0 0 0-3H8v5"/></svg>'
+};
+
+/* ---------------- virtual filesystem ---------------- */
+const md = {
+  about: () => `# about.txt\n\n${CV.about.join("\n\n")}\n`,
+  work: w => `# ${w.role}\n## ${w.org}\n## ${w.when}\n\n${w.bullets.map(b => "- " + b).join("\n")}\n`,
+  proj: p => `# ${p.name}\n## ${p.tagline}\nstatus: ${p.status}\n\n${p.bullets.map(b => "- " + b).join("\n")}\n\nstack: ${p.stack.join(", ")}\n`,
+  skills: () => "{\n" + Object.entries(CV.skills).map(([k, v]) => `  "${k}": [${v.map(s => `"${s}"`).join(", ")}]`).join(",\n") + "\n}\n",
+  vcf: () => `BEGIN:VCARD\nVERSION:4.0\nFN:${CV.name}\nNICKNAME:${CV.nick}\nTITLE:${CV.title}\nEMAIL:${CV.contact.email}\nURL:https://${CV.contact.linkedin}\nURL:https://${CV.contact.github}\nADR:${CV.contact.place}\nEND:VCARD\n`
+};
+const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const FS = {type:"dir", c:{
+  "about.txt": {type:"file", text: md.about},
+  "experience": {type:"dir", c: Object.fromEntries(CV.work.map(w => [slug(w.short) + ".md", {type:"file", text: () => md.work(w)}]))},
+  "projects": {type:"dir", c: Object.fromEntries(CV.projects.map(p => [slug(p.name), {type:"dir", c:{"README.md": {type:"file", text: () => md.proj(p)}}}]))},
+  "skills.json": {type:"file", text: md.skills},
+  "contact.vcf": {type:"file", text: md.vcf},
+  "resume.pdf": {type:"pdf"},
+  ".secret": {type:"file", hidden:true, text: () => "You found it.\nThe password is: sudo hire-me\n"}
+}};
+const resolve = (cwd, p = "") => {
+  let parts = p.startsWith("~") || p.startsWith("/") ? [] : [...cwd];
+  p.replace(/^~\/?|^\/+/, "").split("/").filter(Boolean).forEach(seg => { if (seg === "..") parts.pop(); else if (seg !== ".") parts.push(seg); });
+  let node = FS; for (const s of parts) { if (!node || node.type !== "dir" || !node.c[s]) return {node: null, parts}; node = node.c[s]; }
+  return {node, parts};
+};
+const pathStr = parts => "~" + (parts.length ? "/" + parts.join("/") : "");
+const sizeOf = n => n.type === "dir" ? 4096 : n.type === "pdf" ? 48213 : n.text().length;
+
+/* ---------------- window manager ---------------- */
+const desk = $("#desk");
+let Z = 20, curWS = 1; const WINS = new Set();
+const isNarrow = () => innerWidth < 760;
+function setTitle() { const f = [...WINS].find(w => w.el.classList.contains("focus") && !w.el.classList.contains("hide")); $("#ptitle").innerHTML = f ? `<b>${H(f.title)}</b> — workspace ${curWS}` : `workspace ${curWS}`; }
+function focus(w) { WINS.forEach(x => x.el.classList.remove("focus")); w.el.classList.add("focus"); w.el.style.zIndex = ++Z; setTitle(); w.onFocus && w.onFocus(); }
+function makeWin({app, title, w = 640, h = 420, x, y, body}) {
+  const el = document.createElement("section"); el.className = "win"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", title);
+  const DW = desk.clientWidth, DH = desk.clientHeight - 70;
+  w = Math.min(w, DW - 20); h = Math.min(h, DH - 10);
+  const n = WINS.size;
+  el.style.width = w + "px"; el.style.height = h + "px";
+  el.style.left = (x ?? Math.max(10, Math.min(DW - w - 10, 130 + (n % 6) * 36))) + "px";
+  el.style.top = (y ?? Math.max(10, Math.min(DH - h, 20 + (n % 6) * 30))) + "px";
+  el.innerHTML = `<div class="tbar">${IC[APPS[app].icon]}<b></b><div class="wb"><button type="button" aria-label="Minimise">–</button><button type="button" aria-label="Maximise">□</button><button type="button" class="x" aria-label="Close">×</button></div></div><div class="wbody"></div><div class="grip" aria-hidden="true"></div>`;
+  el.querySelector(".tbar b").textContent = title;
+  const win = {el, app, title, ws: curWS, body: el.querySelector(".wbody")};
+  if (typeof body === "string") win.body.innerHTML = body; else if (body) win.body.appendChild(body);
+  const [bMin, bMax, bX] = el.querySelectorAll(".wb button");
+  bX.addEventListener("click", () => close(win));
+  bMin.addEventListener("click", () => { el.classList.add("hide"); el.classList.remove("focus"); setTitle(); dockState(); });
+  bMax.addEventListener("click", () => toggleMax(win));
+  el.querySelector(".tbar").addEventListener("dblclick", e => { if (!e.target.closest("button")) toggleMax(win); });
+  el.addEventListener("pointerdown", () => focus(win));
+  dragify(win); resizable(win);
+  desk.appendChild(el); WINS.add(win); focus(win); dockState(); wsState();
+  win.setTitle = t => { win.title = t; el.querySelector(".tbar b").textContent = t; el.setAttribute("aria-label", t); setTitle(); };
+  return win;
+}
+function close(win) { win.onClose && win.onClose(); win.el.remove(); WINS.delete(win); setTitle(); dockState(); wsState(); }
+function toggleMax(win) {
+  const el = win.el;
+  if (el.classList.toggle("max")) { win.prev = [el.style.left, el.style.top, el.style.width, el.style.height]; Object.assign(el.style, {left: "0px", top: "0px", width: desk.clientWidth + "px", height: (desk.clientHeight - 64) + "px"}); }
+  else if (win.prev) [el.style.left, el.style.top, el.style.width, el.style.height] = win.prev;
+}
+function dragify(win) {
+  const tb = win.el.querySelector(".tbar"); let s = null;
+  tb.addEventListener("pointerdown", e => { if (e.target.closest("button") || isNarrow()) return; if (win.el.classList.contains("max")) return; s = {x: e.clientX, y: e.clientY, l: win.el.offsetLeft, t: win.el.offsetTop}; tb.setPointerCapture(e.pointerId); });
+  tb.addEventListener("pointermove", e => { if (!s) return; win.el.style.left = Math.max(-win.el.offsetWidth + 100, Math.min(desk.clientWidth - 100, s.l + e.clientX - s.x)) + "px"; win.el.style.top = Math.max(0, Math.min(desk.clientHeight - 40, s.t + e.clientY - s.y)) + "px"; });
+  tb.addEventListener("pointerup", () => s = null);
+}
+function resizable(win) {
+  const g = win.el.querySelector(".grip"); let s = null;
+  g.addEventListener("pointerdown", e => { e.stopPropagation(); s = {x: e.clientX, y: e.clientY, w: win.el.offsetWidth, h: win.el.offsetHeight}; g.setPointerCapture(e.pointerId); focus(win); });
+  g.addEventListener("pointermove", e => { if (!s) return; win.el.style.width = Math.max(280, s.w + e.clientX - s.x) + "px"; win.el.style.height = Math.max(160, s.h + e.clientY - s.y) + "px"; });
+  g.addEventListener("pointerup", () => s = null);
+}
+function openOrFocus(app, key, make) {
+  const ex = [...WINS].find(w => w.app === app && w.key === key);
+  if (ex) { if (ex.ws !== curWS) switchWS(ex.ws); ex.el.classList.remove("hide"); focus(ex); dockState(); return ex; }
+  const w = make(); w.key = key; return w;
+}
+
+/* workspaces */
+const wsEl = $("#ws");
+[1, 2, 3, 4].forEach(n => { const b = document.createElement("button"); b.type = "button"; b.textContent = n; b.setAttribute("aria-label", "Workspace " + n); b.addEventListener("click", () => switchWS(n)); wsEl.appendChild(b); });
+function switchWS(n) { curWS = n; WINS.forEach(w => w.el.style.display = w.ws === n ? "" : "none"); wsState(); setTitle(); }
+function wsState() { [...wsEl.children].forEach((b, i) => { b.classList.toggle("on", i + 1 === curWS); b.classList.toggle("has", [...WINS].some(w => w.ws === i + 1)); }); }
+
+/* ---------------- apps ---------------- */
+const APPS = {
+  terminal: {name: "Terminal", icon: "term", open: () => Terminal()},
+  files: {name: "Files", icon: "files", open: (p) => Files(p)},
+  editor: {name: "Editor", icon: "edit", open: (p) => Editor(p || ["about.txt"])},
+  monitor: {name: "System Monitor", icon: "mon", open: () => Monitor()},
+  github: {name: "GitHub", icon: "gh", open: () => GitHub()},
+  git: {name: "Career.git", icon: "git", open: () => GitApp()},
+  resume: {name: "Resume", icon: "cv", open: () => Resume()},
+  mail: {name: "Mail", icon: "mail", open: () => Mail()},
+  settings: {name: "Settings", icon: "set", open: () => Settings()}
+};
+
+/* ---- editor ---- */
+function hl(text, name) {
+  const lines = H(text).split("\n");
+  if (name.endsWith(".json")) return lines.map(l => l.replace(/(&quot;|")([^"]*)("(?=\s*:))/g, '<span class="kw">"$2"</span>').replace(/:\s(\[.*)/, (m, a) => ": " + a.replace(/"([^"]*)"/g, '<span class="str">"$1"</span>'))).join("\n");
+  if (name.endsWith(".vcf")) return lines.map(l => l.replace(/^([A-Z:0-9.]+?):/, '<span class="kw">$1</span>:')).join("\n");
+  return lines.map(l => l.startsWith("## ") ? `<span class="h2">${l}</span>` : l.startsWith("# ") ? `<span class="h1">${l}</span>` : l.startsWith("- ") ? `<span class="li">-</span>${l.slice(1)}` : /^(status|stack):/.test(l) ? l.replace(/^(\w+):/, '<span class="kw">$1:</span>') : l).join("\n");
+}
+function Editor(parts) {
+  const {node} = resolve([], parts.join("/"));
+  if (!node) return;
+  if (node.type === "pdf") return APPS.resume.open();
+  if (node.type === "dir") return Files(parts);
+  const name = parts[parts.length - 1], text = node.text(), n = text.split("\n").length;
+  return openOrFocus("editor", parts.join("/"), () => makeWin({app: "editor", title: `vim ${pathStr(parts)}`, w: 620, h: 440,
+    body: `<div class="ed"><div class="code"><div class="ln">${Array.from({length: n}, (_, i) => i + 1).join("\n")}</div><pre class="tx">${hl(text, name)}</pre></div><div class="status"><span>NORMAL · ${H(name)} [readonly]</span><span>utf-8 · ${n}L · ${text.length}B</span></div></div>`}));
+}
+
+/* ---- files ---- */
+function Files(start = []) {
+  const box = document.createElement("div"); box.className = "fm";
+  const w = openOrFocus("files", "files", () => makeWin({app: "files", title: "Files", w: 660, h: 420, body: box}));
+  if (!box.isConnected && w.body.firstChild) { w.go(start); return w; }
+  box.innerHTML = `<nav><button type="button" data-p="">~ home</button><button type="button" data-p="projects">projects</button><button type="button" data-p="experience">experience</button><button type="button" data-p="resume.pdf">resume.pdf</button></nav><div class="main"><div class="crumb"></div><div class="grid"></div></div>`;
+  const crumb = box.querySelector(".crumb"), grid = box.querySelector(".grid");
+  w.go = parts => {
+    const {node} = resolve([], parts.join("/"));
+    if (!node) return;
+    if (node.type !== "dir") { Editor(parts); return; }
+    w.setTitle("Files — " + pathStr(parts));
+    crumb.innerHTML = `<b>${pathStr(parts)}</b> · ${Object.keys(node.c).filter(k => !node.c[k].hidden).length} items`;
+    box.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.p === parts.join("/")));
+    grid.innerHTML = (parts.length ? `<button class="fi" type="button" data-n="..">${IC.dir}<span>..</span></button>` : "") +
+      Object.entries(node.c).filter(([, v]) => !v.hidden).map(([k, v]) => `<button class="fi" type="button" data-n="${H(k)}">${v.type === "dir" ? IC.dir : v.type === "pdf" ? IC.pdf : IC.file}<span>${H(k)}</span></button>`).join("");
+    grid.querySelectorAll(".fi").forEach(b => b.addEventListener("click", () => { const n = b.dataset.n; w.go(n === ".." ? parts.slice(0, -1) : [...parts, n]); }));
+  };
+  box.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => w.go(b.dataset.p ? b.dataset.p.split("/") : [])));
+  w.go(start);
+  return w;
+}
+
+/* ---- monitor ---- */
+const PROCS = [
+  ["react.js", "frontend", 18], ["next.js", "frontend", 14], ["node", "backend", 16], ["python3", "backend", 22], ["fastapi", "backend", 9],
+  ["g++ dsa.cpp", "dsa", 25], ["java", "dsa", 8], ["postgres", "data", 7], ["mysqld", "data", 6], ["dockerd", "infra", 11],
+  ["aws-cli", "infra", 8], ["git", "tooling", 5], ["sklearn --learn", "ml", 19], ["photoshop", "design", 4], ["premiere", "design", 3], ["chai", "fuel", 31]
+];
+function Monitor() {
+  return openOrFocus("monitor", "mon", () => {
+    const w = makeWin({app: "monitor", title: "htop — System Monitor", w: 620, h: 470, body: `<div class="mon"><div class="meters" id="mtr"></div><table><thead><tr><th>PID</th><th>USER</th><th>CPU%</th><th>MEM%</th><th>TIME+</th><th>COMMAND</th></tr></thead><tbody></tbody></table><div class="foot"><b>F1</b>help <b>F9</b>kill (disabled: all processes are essential) · uptime 2y 4m · tasks ${PROCS.length}</div></div>`});
+    const tb = w.body.querySelector("tbody"), mtr = w.body.querySelector("#mtr");
+    const meters = [["CPU0", "projects"], ["CPU1", "learning"], ["Mem", "ideas"], ["Swp", "sleep"]];
+    mtr.innerHTML = meters.map(([k]) => `<div class="meter"><span>${k}</span><div class="track"><div class="fill"></div></div><span class="v"></span></div>`).join("");
+    const tick = () => {
+      const rows = PROCS.map(([c, u, b], i) => ({pid: 1024 + i * 37, u, cpu: Math.max(.1, b + (Math.random() - .5) * b * .6), mem: (b / 3 + Math.random()).toFixed(1), c})).sort((a, b) => b.cpu - a.cpu);
+      tb.innerHTML = rows.map(r => `<tr><td>${r.pid}</td><td class="c-b">${r.u}</td><td class="c-acc">${r.cpu.toFixed(1)}</td><td>${r.mem}</td><td class="c-d">${Math.floor(r.cpu * 3)}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}.${Math.floor(Math.random() * 99)}</td><td class="c-w">${r.c}</td></tr>`).join("");
+      const vals = [72 + Math.random() * 20, 60 + Math.random() * 30, 85 + Math.random() * 10, 8 + Math.random() * 10];
+      mtr.querySelectorAll(".meter").forEach((m, i) => { m.querySelector(".fill").style.width = vals[i] + "%"; m.querySelector(".v").textContent = i === 3 ? "low" : vals[i].toFixed(0) + "%"; });
+    };
+    tick(); const iv = setInterval(tick, 1200); w.onClose = () => clearInterval(iv);
+    return w;
+  });
+}
+
+/* ---- git ---- */
+const COMMITS = [
+  ["a91f2c0", "Nov 2026", "feat(galla): public release on Google Play", "HEAD -> main"],
+  ["7c3d9e1", "Oct 2026", "chore(tagshop): wrap up 4-month full-stack internship", ""],
+  ["5be04a7", "2026", "feat(school-erp): ship to production (Python + Next.js on AWS)", ""],
+  ["e2a7731", "2026", "feat(freelance): launch Micro Path Labs booking site", ""],
+  ["c0ffee1", "Jun 2026", "feat(tagshop): join as paid on-site full-stack intern", "tag: v2.0"],
+  ["3f8d210", "Dec 2025", "feat(triambika): business & creative manager, client work + AI automation", ""],
+  ["1d4e5a9", "2025", "refactor: move from design into engineering", ""],
+  ["0000001", "Jul 2024", "init: start B.Tech CSE at JECRC University", "tag: v1.0"]
+];
+const gitLog = () => COMMITS.map(([h, d, m, r], i) => `<span class="c-y">* ${h}</span>${r ? ` <span class="c-acc">(${r})</span>` : ""} ${H(m)} <span class="c-d">— ${d}</span>${i < COMMITS.length - 1 ? "\n<span class=\"c-m\">|</span>" : ""}`).join("\n");
+function GitApp() {
+  return openOrFocus("git", "git", () => makeWin({app: "git", title: "Career.git — git log --graph", w: 640, h: 380, body: `<div class="term"><pre><span class="c-acc">shreshtha@os</span>:<span class="c-b">~/career</span>$ git log --graph --oneline\n${gitLog()}</pre></div>`}));
+}
+
+/* ---- github ---- */
+const PINS = [
+  {n: "galla", d: "Business management Android app for small shop owners. Live on Google Play.", l: "Android", c: "#3ddc84"},
+  {n: "school-erp", d: "Lean school ERP: upload once, real-time for admins, teachers and parents.", l: "Python · Next.js", c: "#3572A5"},
+  {n: "micro-path-labs", d: "Test-booking website for a pathology lab (client project).", l: "React", c: "#61dafb"},
+  {n: "shreshtha-os", d: "This portfolio: a tiny Linux desktop in one HTML file.", l: "JavaScript", c: "#f1e05a"}
+];
+function GitHub() {
+  return openOrFocus("github", "gh", () => {
+    const w = makeWin({app: "github", title: "GitHub — " + GH_USER, w: 820, h: 560, body: `<div class="gh">
+      <div class="gh-side"><div class="av">SS</div><h2>Shreshtha Soni</h2><div class="handle">${H(GH_USER)}</div>
+        <p>Full-stack developer. I build products and ship them to real users.</p>
+        <a class="btn solid" href="${GH_URL}" target="_blank" rel="noopener">Open GitHub profile</a><button class="btn" type="button" id="ghcopy">Copy link</button>
+        <div class="meta"><span>loc  <b>Jaipur, India</b></span><span>edu  <b>B.Tech CSE, JECRC '28</b></span><span>mail <b>${CV.contact.email}</b></span><span>in   <a href="https://${CV.contact.linkedin}" target="_blank" rel="noopener">${CV.contact.linkedin}</a></span></div>
+      </div>
+      <div>
+        <div class="gh-readme"><div class="fn">${H(GH_USER)} / README.md</div><h3>Hi, I'm Shreshtha (Keshav)</h3>
+          <p>B.Tech CSE student at JECRC University and full-stack developer. I shipped <b>Galla</b> to the Play Store, a <b>school ERP</b> that runs in production, and client sites like Micro Path Labs. Ex full-stack intern at <b>Tagshop.ai</b>.</p>
+          <p class="c-d">Currently: DSA in C++ every day, and going deeper into machine learning.</p>
+          <div class="chips">${["C++","Java","Python","JavaScript","React","Next.js","Node.js","FastAPI","SQL","AWS","Docker","Git"].map(x => `<span>${x}</span>`).join("")}</div></div>
+        <p class="gh-h">Pinned projects</p>
+        <div class="pins">${PINS.map(p => `<a class="pin" href="${GH_URL}" target="_blank" rel="noopener" style="text-decoration:none;color:inherit"><b>${p.n}</b><span class="d">${H(p.d)}</span><span class="lang"><i style="background:${p.c}"></i>${p.l}</span></a>`).join("")}</div>
+        <p class="c-d" style="margin-top:12px;font-size:12px">Live GitHub data can't load inside this page. The buttons open the real profile.</p>
+      </div></div>`});
+    w.body.querySelector("#ghcopy").addEventListener("click", async e => { const b = e.currentTarget; try { await navigator.clipboard.writeText(GH_URL); b.textContent = "Copied"; } catch { b.textContent = GH_URL; } setTimeout(() => b.textContent = "Copy link", 1800); });
+    return w;
+  });
+}
+
+/* ---- resume / mail / settings ---- */
+function Resume() {
+  return openOrFocus("resume", "cv", () => makeWin({app: "resume", title: "resume.pdf", w: 560, h: 460, body: `<div class="doc"><h2>Shreshtha Soni</h2><p class="sub">Full-stack developer · B.Tech CSE, JECRC University (2024 to 2028) · Jaipur</p><div>${R.work()}</div><p><a class="btn solid" href="resume.pdf" target="_blank" rel="noopener">Open resume.pdf</a><button class="btn copy" type="button">Copy email</button></p></div>`, }))
+    .body && (wireCopy(document), [...WINS].find(w => w.key === "cv"));
+}
+function Mail() {
+  return openOrFocus("mail", "mail", () => {
+    const w = makeWin({app: "mail", title: "Mail — new message", w: 540, h: 470, body: `<div class="doc"><h2>Write to Shreshtha</h2><p class="sub">Your message opens in your own mail app. Nothing is sent from this page.</p>
+      <form class="form" id="mf"><label>To<input value="${CV.contact.email}" readonly id="m-to"></label><label>Subject<input id="m-sub" value="Internship opportunity"></label><label>Message<textarea id="m-msg">Hi Shreshtha,\n\n</textarea></label>
+      <div><button class="btn solid" type="submit">Open in mail app</button><button class="btn copy" type="button">Copy email</button></div></form>
+      <p class="sub" style="margin-top:12px">Or: <a href="https://${CV.contact.linkedin}" target="_blank" rel="noopener">${CV.contact.linkedin}</a> · <a href="https://${CV.contact.github}" target="_blank" rel="noopener">${CV.contact.github}</a></p></div>`});
+    wireCopy(w.body);
+    w.body.querySelector("#mf").addEventListener("submit", e => { e.preventDefault(); const s = encodeURIComponent(w.body.querySelector("#m-sub").value), b = encodeURIComponent(w.body.querySelector("#m-msg").value); location.href = `mailto:${CV.contact.email}?subject=${s}&body=${b}`; toast("Mail", "Opening your mail app. If nothing happens, use Copy email."); });
+    return w;
+  });
+}
+const ACCENTS = {green: "#3dff8f", amber: "#ffb43d", cyan: "#3de3ff", pink: "#ff5fa8", white: "#e8eee9"};
+function applySettings() {
+  const s = settings; document.documentElement.style.setProperty("--acc", ACCENTS[s.accent] || ACCENTS.green);
+  document.body.classList.toggle("scan", s.scan); document.body.classList.remove("w-matrix", "w-plain"); if (s.wall !== "grid") document.body.classList.add("w-" + s.wall);
+  store.set("settings", s);
+}
+let settings = Object.assign({accent: "green", wall: "grid", scan: false, boot: true}, store.get("settings", {}));
+function Settings() {
+  return openOrFocus("settings", "set", () => {
+    const w = makeWin({app: "settings", title: "Settings", w: 480, h: 440, body: `<div class="doc"><h2>Appearance</h2><p class="sub">Saved in this browser only.</p>
+      <div>Accent</div><div class="opts" id="acc">${Object.entries(ACCENTS).map(([k, v]) => `<button class="sw" type="button" data-k="${k}" style="background:${v}" aria-label="${k}"></button>`).join("")}</div>
+      <div>Wallpaper</div><div class="opts seg" id="wall"><button type="button" data-k="grid">grid</button><button type="button" data-k="matrix">matrix</button><button type="button" data-k="plain">plain</button></div>
+      <div>Effects</div><div class="opts seg" id="fx"><button type="button" data-k="scan">CRT scanlines</button><button type="button" data-k="boot">boot animation</button></div></div>`});
+    const sync = () => { w.body.querySelectorAll("#acc .sw").forEach(b => b.classList.toggle("on", b.dataset.k === settings.accent)); w.body.querySelectorAll("#wall button").forEach(b => b.classList.toggle("on", b.dataset.k === settings.wall)); w.body.querySelectorAll("#fx button").forEach(b => b.classList.toggle("on", !!settings[b.dataset.k])); };
+    w.body.querySelectorAll("#acc .sw").forEach(b => b.addEventListener("click", () => { settings.accent = b.dataset.k; applySettings(); sync(); }));
+    w.body.querySelectorAll("#wall button").forEach(b => b.addEventListener("click", () => { settings.wall = b.dataset.k; applySettings(); sync(); }));
+    w.body.querySelectorAll("#fx button").forEach(b => b.addEventListener("click", () => { settings[b.dataset.k] = !settings[b.dataset.k]; applySettings(); sync(); }));
+    sync(); return w;
+  });
+}
+
+/* ---- terminal ---- */
+let termCount = 0;
+const LOGO_SMALL = [
+"   ███████╗",
+"   ██╔════╝",
+"   ███████╗",
+"   ╚════██║",
+"   ███████║",
+"   ╚══════╝"];
+function neofetch() {
+  const info = [
+    `<span class="c-acc">shreshtha</span>@<span class="c-acc">os</span>`, `<span class="c-d">--------------</span>`,
+    `<span class="c-y">OS</span>      Shreshtha OS 26.11 x86_64`, `<span class="c-y">Host</span>    Shreshtha (Keshav) Soni`, `<span class="c-y">Kernel</span>  B.Tech CSE · JECRC University '28`,
+    `<span class="c-y">Uptime</span>  2 years, 4 months (shipping)`, `<span class="c-y">Shell</span>   C++ · Java · Python · JavaScript`, `<span class="c-y">WM</span>      React · Next.js · Node · FastAPI`,
+    `<span class="c-y">Infra</span>   AWS · Docker · SQL · Git`, `<span class="c-y">GitHub</span>  <span class="c-b">${GH_URL.replace("https://", "")}</span>`, `<span class="c-y">Shipped</span> Galla · School ERP · Micro Path Labs`, `<span class="c-y">Last job</span> Full-Stack Intern @ Tagshop.ai (Jun–Oct 2026)`,
+    `<span class="c-y">Status</span>  <span class="c-acc">open to SDE internships</span>`, "",
+    ["c-r", "c-y", "c-acc", "c-b", "c-m", "c-o"].map(c => `<span class="${c}">███</span>`).join("")];
+  if (isNarrow()) return info.join("\n");
+  return info.map((l, i) => `<span class="c-acc">${(LOGO_SMALL[i] || "").padEnd(13)}</span>${l}`).join("\n");
+}
+const HELP = [
+  ["help", "this list"], ["ls [-la] [dir]", "list files"], ["cd <dir>", "change directory"], ["pwd", "where am I"], ["cat <file>", "print a file"], ["tree", "the whole home folder"],
+  ["open <path>", "open a file or folder in an app"], ["neofetch", "system info (it's me)"], ["whoami", "short intro"], ["projects", "what I've shipped"], ["experience", "where I've worked"],
+  ["skills", "skill meters"], ["git log", "career as commits"], ["gh", "my GitHub profile"], ["gh repo list", "pinned repos"], ["htop", "process monitor"], ["contact", "how to reach me"], ["resume", "open resume.pdf"],
+  ["theme <name>", "green | amber | cyan | pink | white"], ["matrix", "follow the white rabbit"], ["history", "past commands"], ["clear", "clear screen"], ["exit", "close this terminal"]];
+const CMDNAMES = ["gh","github","ls","cd","pwd","cat","tree","open","neofetch","whoami","projects","experience","skills","git","htop","top","contact","resume","theme","matrix","history","clear","exit","echo","date","uname","man","sudo","mail","files","settings","vim","nano","rm","ping","hack"];
+function lev(a, b) { const d = Array.from({length: a.length + 1}, (_, i) => [i]); for (let j = 1; j <= b.length; j++) d[0][j] = j; for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1)); return d[a.length][b.length]; }
+function Terminal(opts = {}) {
+  termCount++;
+  const box = document.createElement("div"); box.className = "term";
+  box.innerHTML = `<pre class="out"></pre><div class="tline"><span class="ps"></span><input aria-label="Terminal input" autocomplete="off" autocapitalize="off" spellcheck="false"></div>`;
+  const w = makeWin({app: "terminal", title: "shreshtha@os: ~", w: opts.w || 700, h: opts.h || 440, x: opts.x, y: opts.y, body: box});
+  const out = box.querySelector(".out"), inp = box.querySelector("input"), ps = box.querySelector(".ps");
+  let cwd = [], hist = store.get("hist", []), hi = hist.length;
+  const prompt = () => `<span class="c-acc">shreshtha@os</span>:<span class="c-b">${H(pathStr(cwd))}</span>$`;
+  const setPS = () => { ps.innerHTML = prompt(); w.setTitle("shreshtha@os: " + pathStr(cwd)); };
+  const print = h => { out.insertAdjacentHTML("beforeend", h + "\n"); w.body.scrollTop = w.body.scrollHeight; };
+  const listing = (node, long, all) => { const ents = Object.entries(node.c).filter(([k, v]) => all || !v.hidden);
+    if (!long) return ents.map(([k, v]) => v.type === "dir" ? `<span class="c-b">${k}/</span>` : v.type === "pdf" ? `<span class="c-r">${k}</span>` : k).join("   ");
+    return `total ${ents.length}\n` + ents.map(([k, v]) => `${v.type === "dir" ? "drwxr-xr-x" : "-rw-r--r--"} 1 shreshtha dev ${String(sizeOf(v)).padStart(6)} Nov 22 ${v.type === "dir" ? `<span class="c-b">${k}/</span>` : k}`).join("\n"); };
+  const treeOf = (node, pre = "") => { const ents = Object.entries(node.c).filter(([, v]) => !v.hidden); return ents.map(([k, v], i) => { const last = i === ents.length - 1; return pre + (last ? "└── " : "├── ") + (v.type === "dir" ? `<span class="c-b">${k}</span>` : k) + (v.type === "dir" ? "\n" + treeOf(v, pre + (last ? "    " : "│   ")) : ""); }).join("\n").replace(/\n\n/g, "\n"); };
+  const C = {
+    help: () => "<span class=\"c-w\">Shreshtha OS shell</span>, the commands that matter:\n" + HELP.map(([c, d]) => `  <span class="c-acc">${H(c).padEnd(16)}</span> ${d}`).join("\n") + "\n<span class=\"c-d\">Tab completes, ↑↓ walks history. Some commands are hidden.</span>",
+    ls: a => { const long = a.some(x => /^-.*l/.test(x)), all = a.some(x => /^-.*a/.test(x)); const p = a.find(x => !x.startsWith("-")); const {node} = resolve(cwd, p || ""); if (!node) return `<span class="c-r">ls: cannot access '${H(p)}': No such file or directory</span>`; if (node.type !== "dir") return H(p); return listing(node, long, all); },
+    cd: a => { const {node, parts} = resolve(cwd, a[0] || "~"); if (!node) return `<span class="c-r">cd: ${H(a[0])}: No such file or directory</span>`; if (node.type !== "dir") return `<span class="c-r">cd: ${H(a[0])}: Not a directory</span>`; cwd = parts; setPS(); return null; },
+    pwd: () => "/home/shreshtha" + pathStr(cwd).slice(1),
+    cat: a => { if (!a[0]) return "cat: missing file operand"; const {node} = resolve(cwd, a[0]); if (!node) return `<span class="c-r">cat: ${H(a[0])}: No such file or directory</span>`; if (node.type === "dir") return `<span class="c-r">cat: ${H(a[0])}: Is a directory</span>`; if (node.type === "pdf") return `<span class="c-y">binary file. Try: open resume.pdf</span>`; return hl(node.text(), a[0]); },
+    tree: () => `<span class="c-b">~</span>\n` + treeOf(FS),
+    open: a => { const {node, parts} = resolve(cwd, a[0] || "."); if (!node) return `<span class="c-r">open: ${H(a[0])}: not found</span>`; if (node.type === "dir") Files(parts); else Editor(parts); return `<span class="c-d">opening ${H(pathStr(parts))}…</span>`; },
+    vim: a => C.open(a), nano: a => C.open(a), files: () => (Files(cwd), null), settings: () => (Settings(), null), mail: () => (Mail(), null),
+    neofetch: neofetch,
+    whoami: () => `<span class="c-acc">shreshtha</span> (Keshav). ${CV.about[0]}`,
+    projects: () => CV.projects.map(p => `<span class="c-acc">●</span> <span class="c-w">${p.name}</span> <span class="c-y">[${p.status}]</span>\n  ${p.tagline}\n  <span class="c-d">${p.stack.join(" · ")}</span>`).join("\n\n") + `\n\n<span class="c-d">details: cd projects &amp;&amp; ls, or: open projects</span>`,
+    experience: () => CV.work.map(x => `<span class="c-y">${x.when.padEnd(20)}</span> <span class="c-w">${x.role}</span>\n${"".padEnd(21)}<span class="c-d">${x.org}</span>`).join("\n"),
+    skills: () => Object.entries({"C++ / DSA": 70, "Java": 55, "Python": 82, "JavaScript": 85, "React / Next.js": 85, "Node / FastAPI": 75, "SQL / DBs": 75, "AWS / Docker": 68, "Machine learning": 35, "Design / video": 90}).map(([k, v]) => `${k.padEnd(18)} <span class="c-acc">${"█".repeat(Math.round(v / 5))}</span><span class="c-d">${"░".repeat(20 - Math.round(v / 5))}</span> ${v}%`).join("\n") + "\n<span class=\"c-d\">self-assessed. machine learning is the one growing fastest.</span>",
+    gh: a => { if (a[0] === "repo" && a[1] === "list") return PINS.map(p => `<span class="c-b">${GH_USER}/${p.n}</span>`.padEnd(40) + ` <span class="c-d">${H(p.d)}</span>`).join("\n"); GitHub(); return `<span class="c-w">Shreshtha Soni</span> <span class="c-d">(${H(GH_USER)})</span>\n<span class="c-acc">${GH_URL}</span>\n<span class="c-d">opening GitHub… try: gh repo list</span>`; },
+    github: a => C.gh(a),
+    git: a => a[0] === "remote" ? `origin  ${GH_URL}.git (fetch)\norigin  ${GH_URL}.git (push)` : a[0] === "log" ? gitLog() : a[0] === "status" ? "On branch main\nYour career is ahead of 'origin/college' by 3 shipped products.\n\nnothing to commit, working tree clean" : `git: try 'git log' or 'git status'`,
+    htop: () => (Monitor(), `<span class="c-d">launching htop…</span>`), top: () => C.htop(),
+    contact: () => `<span class="c-y">email</span>    ${CV.contact.email}\n<span class="c-y">linkedin</span> https://${CV.contact.linkedin}\n<span class="c-y">github</span>   https://${CV.contact.github}\n<span class="c-y">where</span>    ${CV.contact.place}\n<span class="c-d">try: mail · gh</span>`,
+    resume: () => (Resume(), `<span class="c-d">opening resume.pdf…</span>`),
+    theme: a => { if (!ACCENTS[a[0]]) return "usage: theme green|amber|cyan|pink|white"; settings.accent = a[0]; applySettings(); return `accent set to <span class="c-acc">${a[0]}</span>`; },
+    matrix: () => (runMatrix(), null),
+    history: () => hist.map((h, i) => `${String(i + 1).padStart(4)}  ${H(h)}`).join("\n") || "(empty)",
+    clear: () => { out.innerHTML = ""; return null; },
+    exit: () => { setTimeout(() => close(w), 50); return "logout"; },
+    echo: a => H(a.join(" ")),
+    date: () => new Date().toString(),
+    uname: a => a[0] === "-a" ? "ShreshthaOS 26.11.0-jaipur #1 SMP PREEMPT x86_64 full-stack/linux" : "ShreshthaOS",
+    man: a => a[0] ? (HELP.find(h => h[0].split(" ")[0] === a[0]) ? `${a[0]}: ${HELP.find(h => h[0].split(" ")[0] === a[0])[1]}` : `No manual entry for ${H(a[0])}`) : "What manual page do you want?",
+    sudo: a => { const s = a.join(" "); if (/hire/.test(s)) return `[sudo] password for recruiter: ********\n<span class="c-acc">✔ access granted.</span>\nExcellent decision. Reach me at <span class="c-w">${CV.contact.email}</span>\nOpening mail…` + (setTimeout(Mail, 600), ""); if (/rm/.test(s)) return `<span class="c-r">nice try.</span>`; return `<span class="c-r">shreshtha is not in the sudoers file. This incident will be reported.</span>\n<span class="c-d">(hint: sudo hire-me)</span>`; },
+    rm: () => `<span class="c-r">rm: permission denied. This portfolio is read-only.</span>`,
+    ping: a => { const h = a[0] || "recruiter"; return Array.from({length: 4}, (_, i) => `64 bytes from ${H(h)}: icmp_seq=${i + 1} ttl=64 time=${(Math.random() * 3 + .4).toFixed(2)} ms`).join("\n") + `\n<span class="c-acc">--- ${H(h)}: 0% packet loss. Shreshtha replies fast. ---</span>`; },
+    hack: () => { let i = 0; const steps = ["[*] scanning ports on opportunity.local…", "[*] 443/tcp open  internship", "[*] bypassing HR firewall with a strong portfolio…", "[*] injecting: Galla, School ERP, Tagshop.ai", "[+] payload delivered", `<span class="c-acc">[✔] ACCESS GRANTED: interview scheduled (pending your email to ${CV.contact.email})</span>`]; const iv = setInterval(() => { print(steps[i++]); if (i >= steps.length) clearInterval(iv); }, reduce ? 0 : 380); return null; }
+  };
+  const run = line => {
+    print(`${prompt()} ${H(line)}`);
+    if (!line.trim()) return;
+    hist.push(line); hist = hist.slice(-60); store.set("hist", hist); hi = hist.length;
+    const parts = line.trim().split(/\s+/), cmd = parts[0].toLowerCase(), args = parts.slice(1);
+    const fn = C[cmd];
+    if (!fn) { const best = CMDNAMES.map(c => [c, lev(cmd, c)]).sort((a, b) => a[1] - b[1])[0]; print(`<span class="c-r">${H(cmd)}: command not found</span>${best[1] <= 2 ? `. Did you mean <span class="c-acc">${best[0]}</span>?` : ". Type <span class=\"c-acc\">help</span>."}`); return; }
+    const r = fn(args); if (r !== null && r !== undefined && r !== "") print(r);
+  };
+  inp.addEventListener("keydown", e => {
+    if (e.key === "Enter") { const v = inp.value; inp.value = ""; run(v); }
+    else if (e.key === "ArrowUp") { if (hi > 0) inp.value = hist[--hi]; e.preventDefault(); }
+    else if (e.key === "ArrowDown") { hi = Math.min(hist.length, hi + 1); inp.value = hist[hi] || ""; e.preventDefault(); }
+    else if (e.key === "Tab") { e.preventDefault(); complete(); }
+    else if (e.key === "l" && e.ctrlKey) { e.preventDefault(); out.innerHTML = ""; }
+    else if (e.key === "c" && e.ctrlKey) { print(`${prompt()} ${H(inp.value)}^C`); inp.value = ""; }
+  });
+  function complete() {
+    const v = inp.value, parts = v.split(/\s+/);
+    if (parts.length <= 1) { const m = CMDNAMES.filter(c => c.startsWith(parts[0])); if (m.length === 1) inp.value = m[0] + " "; else if (m.length) print(`${prompt()} ${H(v)}\n${m.join("  ")}`); return; }
+    const last = parts[parts.length - 1], slash = last.lastIndexOf("/"), dirPart = slash >= 0 ? last.slice(0, slash + 1) : "", base = slash >= 0 ? last.slice(slash + 1) : last;
+    const {node} = resolve(cwd, dirPart || "."); if (!node || node.type !== "dir") return;
+    const m = Object.keys(node.c).filter(k => k.startsWith(base) && (!node.c[k].hidden || base.startsWith(".")));
+    if (m.length === 1) { parts[parts.length - 1] = dirPart + m[0] + (node.c[m[0]].type === "dir" ? "/" : ""); inp.value = parts.join(" "); }
+    else if (m.length) print(`${prompt()} ${H(v)}\n${m.join("  ")}`);
+  }
+  box.addEventListener("click", () => { if (!getSelection().toString()) inp.focus(); });
+  w.onFocus = () => setTimeout(() => inp.focus({preventScroll: true}), 0);
+  setPS();
+  if (opts.intro) { print(`${prompt()} neofetch\n${neofetch()}\n\n<span class="c-d">Type</span> <span class="c-acc">help</span> <span class="c-d">to get started. Try</span> <span class="c-acc">projects</span><span class="c-d">,</span> <span class="c-acc">git log</span> <span class="c-d">or</span> <span class="c-acc">sudo hire-me</span><span class="c-d">.</span>`); }
+  inp.focus({preventScroll: true});
+  return w;
+}
+
+/* ---------------- matrix rain ---------------- */
+function rain(canvas, alpha = .08) {
+  const g = canvas.getContext("2d"); let cols, drops, raf = 0, last = 0;
+  const size = () => { canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight; cols = Math.ceil(canvas.width / 14); drops = Array.from({length: cols}, () => Math.random() * -50); };
+  size(); addEventListener("resize", size);
+  const chars = "アカサタナハマヤラワ0123456789SHRESHTHA<>/{}=+*";
+  const frame = t => { raf = requestAnimationFrame(frame); if (t - last < 50) return; last = t;
+    g.fillStyle = `rgba(0,0,0,${alpha})`; g.fillRect(0, 0, canvas.width, canvas.height);
+    g.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--acc"); g.font = "14px JetBrains Mono, monospace";
+    drops.forEach((y, i) => { g.fillText(chars[Math.floor(Math.random() * chars.length)], i * 14, y * 14); drops[i] = y * 14 > canvas.height && Math.random() > .975 ? 0 : y + 1; }); };
+  return {start() { if (!raf && !reduce) raf = requestAnimationFrame(frame); }, stop() { cancelAnimationFrame(raf); raf = 0; }};
+}
+const wallRain = rain($("#rain"), .12);
+const mx = $("#matrix"), mxRain = rain(mx, .06);
+function runMatrix() {
+  if (reduce) { toast("Matrix", "Animation is off because your system prefers reduced motion."); return; }
+  mx.classList.add("on"); mxRain.start();
+  const stop = () => { mx.classList.remove("on"); mxRain.stop(); removeEventListener("keydown", stop); mx.removeEventListener("click", stop); };
+  setTimeout(() => { addEventListener("keydown", stop, {once: true}); mx.addEventListener("click", stop, {once: true}); }, 300);
+  setTimeout(stop, 9000);
+}
+
+/* ---------------- launcher, dock, icons, context ---------------- */
+const dock = $("#dock");
+Object.entries(APPS).forEach(([k, a]) => { const b = document.createElement("button"); b.className = "dk"; b.type = "button"; b.dataset.app = k; b.setAttribute("aria-label", a.name); b.innerHTML = IC[a.icon] + `<span class="tip">${a.name}</span>`; b.addEventListener("click", () => {
+  const mine = [...WINS].filter(w => w.app === k);
+  if (k !== "terminal" && mine.length) { const w = mine[0]; if (w.ws !== curWS) switchWS(w.ws); w.el.classList.remove("hide"); focus(w); dockState(); } else a.open();
+}); dock.appendChild(b); });
+function dockState() { dock.querySelectorAll(".dk").forEach(b => b.classList.toggle("run", [...WINS].some(w => w.app === b.dataset.app))); }
+const ICONS = [["Terminal", "term", () => APPS.terminal.open()], ["Home", "dir", () => Files([])], ["projects", "dir", () => Files(["projects"])], ["about.txt", "file", () => Editor(["about.txt"])], ["resume.pdf", "pdf", () => Resume()], ["GitHub", "gh", () => GitHub()], ["Career.git", "git", () => GitApp()], ["Mail", "mail", () => Mail()]];
+ICONS.forEach(([n, ic, fn]) => { const b = document.createElement("button"); b.className = "dicon"; b.type = "button"; b.innerHTML = IC[ic] + `<span>${n}</span>`; b.addEventListener("click", fn); $("#icons").appendChild(b); });
+
+const launch = $("#launch"), lq = $("#lq"), appsEl = $("#apps");
+const ENTRIES = [...Object.entries(APPS).map(([k, a]) => ({n: a.name, ic: a.icon, fn: () => a.open()})),
+  {n: "about.txt", ic: "file", fn: () => Editor(["about.txt"])}, {n: "skills.json", ic: "file", fn: () => Editor(["skills.json"])}, {n: "contact.vcf", ic: "file", fn: () => Editor(["contact.vcf"])},
+  ...CV.projects.map(p => ({n: p.name, ic: "dir", fn: () => Editor(["projects", slug(p.name), "README.md"])})), ...CV.work.map(x => ({n: x.short, ic: "file", fn: () => Editor(["experience", slug(x.short) + ".md"])}))];
+function renderLaunch() { const q = lq.value.toLowerCase(); appsEl.innerHTML = ""; ENTRIES.filter(e => e.n.toLowerCase().includes(q)).forEach(e => { const b = document.createElement("button"); b.type = "button"; b.innerHTML = IC[e.ic] + `<span>${H(e.n)}</span>`; b.addEventListener("click", () => { hideLaunch(); e.fn(); }); appsEl.appendChild(b); }); }
+function showLaunch() { launch.hidden = false; lq.value = ""; renderLaunch(); lq.focus(); }
+function hideLaunch() { launch.hidden = true; }
+$("#brand").addEventListener("click", () => launch.hidden ? showLaunch() : hideLaunch());
+lq.addEventListener("input", renderLaunch);
+lq.addEventListener("keydown", e => { if (e.key === "Enter") { const f = appsEl.querySelector("button"); f && f.click(); } });
+launch.addEventListener("click", e => { if (e.target === launch) hideLaunch(); });
+
+const ctx = $("#ctx");
+const CTX = [["Open Terminal", "Ctrl+Alt+T", () => APPS.terminal.open()], ["Open Files", "", () => Files([])], ["System Monitor", "", () => Monitor()], null,
+  ["Change wallpaper", "", () => { const order = ["grid", "matrix", "plain"]; settings.wall = order[(order.indexOf(settings.wall) + 1) % 3]; applySettings(); toast("Wallpaper", settings.wall); }],
+  ["Settings", "", () => Settings()], null, ["About Shreshtha OS", "", () => toast("Shreshtha OS 26.11", "A portfolio by Shreshtha Soni, built as a tiny Linux desktop. No real kernel was harmed.")]];
+ctx.innerHTML = CTX.map((c, i) => c ? `<button type="button" role="menuitem" data-i="${i}">${c[0]}<span>${c[1]}</span></button>` : "<hr>").join("");
+ctx.querySelectorAll("button").forEach(b => b.addEventListener("click", () => { ctx.hidden = true; CTX[+b.dataset.i][2](); }));
+desk.addEventListener("contextmenu", e => { if (e.target.closest(".win")) return; e.preventDefault(); ctx.hidden = false; ctx.style.left = Math.min(e.clientX, innerWidth - 220) + "px"; ctx.style.top = Math.min(e.clientY, innerHeight - 260) + "px"; });
+addEventListener("pointerdown", e => { if (!ctx.hidden && !e.target.closest("#ctx")) ctx.hidden = true; });
+
+addEventListener("keydown", e => {
+  if (e.ctrlKey && e.altKey && e.key.toLowerCase() === "t") { e.preventDefault(); APPS.terminal.open(); }
+  if (e.key === "Escape") { if (!launch.hidden) hideLaunch(); ctx.hidden = true; }
+  if (e.altKey && /^[1-4]$/.test(e.key)) { e.preventDefault(); switchWS(+e.key); }
+});
+
+function toast(t, m) { const d = document.createElement("div"); d.className = "toast"; d.innerHTML = `<b>${H(t)}</b>${H(m)}`; $("#toasts").appendChild(d); setTimeout(() => d.remove(), 5200); }
+
+/* ---------------- panel tray ---------------- */
+$("#capgh").textContent = GH_URL.replace("https://", "");
+{ const a = $("#ghlink"); a.href = GH_URL; a.textContent = "github/" + GH_USER; }
+const clockEl = $("#clock"); const tickClock = () => clockEl.textContent = new Date().toLocaleString([], {weekday: "short", hour: "2-digit", minute: "2-digit"}); tickClock(); setInterval(tickClock, 10000);
+const cpu = $("#cpu").getContext("2d"), cpuV = Array(30).fill(30);
+setInterval(() => { cpuV.shift(); cpuV.push(20 + Math.random() * 70); cpu.clearRect(0, 0, 60, 16); cpu.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--acc"); cpu.beginPath(); cpuV.forEach((v, i) => cpu[i ? "lineTo" : "moveTo"](i * 2, 16 - v / 100 * 15)); cpu.stroke(); }, 500);
+
+/* ---------------- logo ---------------- */
+$("#logo").textContent = [
+"███████╗██╗  ██╗██████╗ ███████╗███████╗██╗  ██╗████████╗██╗  ██╗ █████╗ ",
+"██╔════╝██║  ██║██╔══██╗██╔════╝██╔════╝██║  ██║╚══██╔══╝██║  ██║██╔══██╗",
+"███████╗███████║██████╔╝█████╗  ███████╗███████║   ██║   ███████║███████║",
+"╚════██║██╔══██║██╔══██╗██╔══╝  ╚════██║██╔══██║   ██║   ██╔══██║██╔══██║",
+"███████║██║  ██║██║  ██║███████╗███████║██║  ██║   ██║   ██║  ██║██║  ██║",
+"╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝",
+"                                                          ██████╗ ███████╗",
+"                                                         ██╔═══██╗██╔════╝",
+"                                                         ██║   ██║███████╗",
+"                                                         ██║   ██║╚════██║",
+"                                                         ╚██████╔╝███████║",
+"                                                          ╚═════╝ ╚══════╝"].join("\n");
+
+/* ---------------- startup ---------------- */
+applySettings();
+if (settings.wall === "matrix") wallRain.start();
+const wallObs = new MutationObserver(() => document.body.classList.contains("w-matrix") ? wallRain.start() : wallRain.stop());
+wallObs.observe(document.body, {attributes: true, attributeFilter: ["class"]});
+wsState();
+
+function startDesktop() {
+  const W = desk.clientWidth;
+  if (isNarrow()) { Terminal({intro: true}); }
+  else {
+    Editor(["about.txt"]); const ed = [...WINS][0]; ed.el.style.left = Math.min(W - 640, W * .5) + "px"; ed.el.style.top = "40px";
+    if (W > 1100) { GitHub(); const m = [...WINS].find(w => w.app === "github"); m.el.style.left = Math.max(10, W - 860) + "px"; m.el.style.top = "250px"; }
+    Terminal({intro: true, x: 130, y: 90, w: Math.min(760, W - 160), h: 470});
+  }
+  setTimeout(() => toast("Welcome to Shreshtha OS", "Right-click the desktop, open the launcher (top-left) or type help in the terminal."), 400);
+  setTimeout(() => toast("1 new notification", "Shreshtha is open to SDE internships. Try: sudo hire-me"), 2600);
+}
+
+const boot = $("#boot");
+let booted = false;
+function finishBoot() { if (booted) return; booted = true; boot.remove(); startDesktop(); }
+if (!settings.boot || reduce) finishBoot();
+else {
+  const skip = () => finishBoot();
+  boot.addEventListener("click", skip); addEventListener("keydown", function k(e) { if (e.key === "Escape") { removeEventListener("keydown", k); skip(); } });
+  const g = document.createElement("div"); g.className = "grub";
+  g.innerHTML = `<h1>GNU GRUB  version 2.12</h1><ul><li class="sel">*Shreshtha OS 26.11 (portfolio)</li><li>Shreshtha OS 26.11 (recovery: plain resume)</li><li>Memory test (memtest86+)</li><li>UEFI Firmware Settings</li></ul><p>The highlighted entry will be executed automatically in <span id="gs">2</span>s.</p>`;
+  boot.prepend(g);
+  let s = 2; const gi = setInterval(() => { s--; const el = $("#gs"); if (el) el.textContent = s; if (s <= 0) { clearInterval(gi); kernel(); } }, 600);
+  function kernel() {
+    if (booted) return; g.remove();
+    const k = document.createElement("div"); k.className = "klog"; boot.prepend(k);
+    const L = [
+      ["", "[    0.000000] Linux version 26.11.0-jaipur (shreshtha@jecrc) (gcc 14.2) #1 SMP PREEMPT"],
+      ["", "[    0.004211] Command line: BOOT_IMAGE=/vmlinuz root=/dev/portfolio ro quiet splash"],
+      ["OK", "Mounted /home/shreshtha"], ["OK", "Connected remote origin: " + GH_URL.replace("https://", "")], ["OK", "Started B.Tech CSE (JECRC University, 2024–2028)"], ["OK", "Loaded languages: C++, Java, Python, JavaScript"],
+      ["OK", "Started react.service, next.service, node.service, fastapi.service"], ["OK", "Started docker.service and aws-cli"], ["OK", "Reached target Experience: Tagshop.ai (Jun–Oct 2026)"],
+      ["OK", "Deployed galla.apk to Google Play"], ["OK", "Deployed school-erp to production"], ["OK", "Started dsa-practice.timer (daily)"], ["OK", "Reached target Graphical Interface"]];
+    let i = 0; const ki = setInterval(() => { if (booted) return clearInterval(ki); const [t, m] = L[i++]; k.innerHTML += (t ? `[  <span class="ok">OK</span>  ] ` : `<span class="dim">`) + m + (t ? "" : "</span>") + "\n"; if (i >= L.length) { clearInterval(ki); setTimeout(login, 350); } }, 110);
+  }
+  function login() {
+    if (booted) return; boot.querySelector(".klog")?.remove();
+    const l = document.createElement("div"); l.className = "login";
+    const now = new Date();
+    l.innerHTML = `<div class="clock">${now.toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})}</div><div class="date">${now.toLocaleDateString([], {weekday: "long", day: "numeric", month: "long"})}</div><div class="avatar">SS</div><div>shreshtha</div><div class="pw" id="pw"><span id="dots"></span><span class="cur"></span></div><div class="dim" id="lmsg">password: ••••••••</div>`;
+    boot.prepend(l);
+    let n = 0; const pi = setInterval(() => { if (booted) return clearInterval(pi); $("#dots").textContent += "•"; if (++n >= 8) { clearInterval(pi); $("#lmsg").innerHTML = '<span class="ok">authenticating…</span>'; setTimeout(finishBoot, 500); } }, 80);
+  }
+}
+})();
+</script>
+</body>
+</html>
