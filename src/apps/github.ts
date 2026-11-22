@@ -3,6 +3,7 @@ import { $, esc, escText } from "../lib/dom";
 import { GITHUB_URL, GITHUB_USERNAME, profile } from "../data/profile";
 import { ago, fallbackRepos, getRepos, pinnable, sourceNote, type Repo } from "../services/github";
 import { makeWin, openOrFocus, type Win } from "../os/wm";
+import { avatarImg } from "../lib/render";
 
 const bold = (s: string) => escText(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
 
@@ -14,7 +15,7 @@ export function open(): Win {
     const c = profile.contact, r = profile.githubReadme;
     const w = makeWin({
       app: "github", title: "GitHub — " + GITHUB_USERNAME, w: 820, h: 560, body: `<div class="gh">
-      <div class="gh-side"><div class="av" aria-hidden="true">${profile.initials}</div><h2>${profile.name}</h2><div class="handle">${escText(GITHUB_USERNAME)}</div>
+      <div class="gh-side"><div class="av" aria-hidden="true">${avatarImg()}</div><h2>${profile.name}</h2><div class="handle">${escText(GITHUB_USERNAME)}</div>
         <p>${profile.title}. I build products and ship them to real users.</p>
         <a class="btn solid" href="${GITHUB_URL}" target="_blank" rel="noopener">Open GitHub profile</a><button class="btn ghcopy" type="button">Copy link</button>
         <div class="meta"><span>loc  <b>${profile.location}</b></span><span>edu  <b>B.Tech CSE, JECRC '${profile.education.gradYear.slice(2)}</b></span><span>mail <b>${c.email}</b></span><span>in   <a href="https://${c.linkedin}" target="_blank" rel="noopener">${c.linkedin}</a></span></div>

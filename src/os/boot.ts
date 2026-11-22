@@ -2,6 +2,7 @@
 import { $, reduceMotion } from "../lib/dom";
 import { GITHUB_URL, profile } from "../data/profile";
 import { settings } from "./settings";
+import { avatarImg } from "../lib/render";
 
 export function boot(done: () => void): void {
   const el = $("#boot");
@@ -16,6 +17,7 @@ export function boot(done: () => void): void {
   if (!settings.boot || reduceMotion) { finish(); return; }
 
   el.addEventListener("click", finish);
+  if (profile.photo) new Image().src = profile.photo; // ready by the time the login screen shows it
 
   // GRUB: ↑/↓ choose an entry, Enter boots it, Esc skips straight to the desktop.
   const entries: [string, (() => void) | null][] = [
@@ -92,7 +94,7 @@ export function boot(done: () => void): void {
     const l = document.createElement("div");
     l.className = "login";
     const now = new Date();
-    l.innerHTML = `<div class="clock">${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div><div class="date">${now.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" })}</div><div class="avatar">${profile.initials}</div><div>shreshtha</div><div class="pw"><span id="dots"></span><span class="cur"></span></div><div class="dim" id="lmsg">password: ••••••••</div>`;
+    l.innerHTML = `<div class="clock">${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</div><div class="date">${now.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" })}</div><div class="avatar">${avatarImg()}</div><div>shreshtha</div><div class="pw"><span id="dots"></span><span class="cur"></span></div><div class="dim" id="lmsg">password: ••••••••</div>`;
     el.prepend(l);
     let n = 0;
     const pi = setInterval(() => {

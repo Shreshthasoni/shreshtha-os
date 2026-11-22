@@ -19,6 +19,7 @@ function seoTags(): string {
   const jsonLd = {
     "@context": "https://schema.org", "@type": "Person",
     name: p.name, alternateName: p.nick, jobTitle: p.title, url: SITE_URL, email: `mailto:${c.email}`, telephone: c.phone,
+    ...(p.photo ? { image: SITE_URL + p.photo } : {}),
     address: { "@type": "PostalAddress", addressLocality: p.city, addressCountry: "IN" },
     alumniOf: { "@type": "CollegeOrUniversity", name: p.education.school },
     sameAs: [`https://${c.linkedin}`, GITHUB_URL]

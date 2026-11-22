@@ -17,3 +17,5 @@
 .pw .cur{display:inline-block;width:8px;height:16px;background:var(--acc);vertical-align:-3px;animation:blink 1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
 
+.avatar{position:relative;overflow:hidden}
+.avatar img,.gh-side .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}

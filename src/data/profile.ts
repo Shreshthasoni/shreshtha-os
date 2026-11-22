@@ -38,6 +38,8 @@ export const profile = {
   name: "Shreshtha Soni",
   nick: "Keshav",
   initials: "SS",
+  /** Profile photo in public/ (square; shown cropped to a circle). Set to "" to show the initials instead. */
+  photo: "/avatar.jpg",
   title: "Full-stack developer",
   city: "Jaipur",
   location: "Jaipur, India",

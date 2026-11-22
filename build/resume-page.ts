@@ -13,6 +13,7 @@ export function renderResumePage(): string {
   const jsonLd = {
     "@context": "https://schema.org", "@type": "Person",
     name: p.name, alternateName: p.nick, jobTitle: p.title, email: `mailto:${c.email}`, telephone: c.phone, url: SITE_URL,
+    ...(p.photo ? { image: SITE_URL + p.photo } : {}),
     address: { "@type": "PostalAddress", addressLocality: p.city, addressCountry: "IN" },
     alumniOf: { "@type": "CollegeOrUniversity", name: p.education.school },
     sameAs: [`https://${c.linkedin}`, GITHUB_URL],
@@ -48,6 +49,9 @@ main{max-width:780px;margin:0 auto;padding:40px 20px 64px}
 a{color:var(--acc)}
 .bar{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:space-between;align-items:center;font-size:14px;margin-bottom:28px;padding-bottom:14px;border-bottom:1px solid var(--line)}
 .bar a{text-decoration:none;font-weight:600}
+.top{display:flex;gap:22px;align-items:center}
+.photo{width:112px;height:112px;border-radius:50%;object-fit:cover;flex:none;border:2px solid var(--line)}
+@media (max-width:560px){.top{flex-direction:column;align-items:flex-start;gap:14px}.photo{width:88px;height:88px}}
 h1{margin:0;font-size:34px;line-height:1.15;letter-spacing:-.01em}
 .lead{margin:6px 0 4px;font-size:18px;color:var(--muted)}
 .contact{display:flex;flex-wrap:wrap;gap:4px 18px;padding:0;margin:12px 0 0;list-style:none;font-size:15px}
@@ -76,7 +80,9 @@ footer{margin-top:40px;font-size:14px;color:var(--muted)}
 <body>
 <main>
 <nav class="bar" aria-label="Page"><a href="/">← Interactive version (Shreshtha OS)</a><a href="/resume.pdf">Download PDF</a></nav>
-<header>
+<header class="top">
+${p.photo ? `<img class="photo" src="${p.photo}" alt="${esc(p.name)}" width="112" height="112">` : ""}
+<div>
 <h1>${esc(p.name)}</h1>
 <p class="lead">${esc(p.title)} · B.Tech CSE, ${esc(p.education.school)} · ${esc(p.location)}</p>
 <ul class="contact">
@@ -86,6 +92,7 @@ footer{margin-top:40px;font-size:14px;color:var(--muted)}
 <li><a href="${GITHUB_URL}">${c.github}</a></li>
 <li>${esc(c.place)}</li>
 </ul>
+</div>
 </header>
 
 <section aria-labelledby="h-about">
