@@ -1,0 +1,13 @@
+@media (max-width:760px){
+  .ptitle,.tray .hide-s{display:none}
+  .logo{right:50%;transform:translate(50%,-80%);font-size:4.2px}
+  .logo-cap{right:16px;left:16px;text-align:center;bottom:84px}
+  .icons{grid-template-columns:repeat(4,1fr);right:12px}
+  .dicon{width:auto}
+  .win{left:0!important;top:0!important;width:100%!important;height:calc(100% - 66px)!important;border-radius:0}
+  .grip{display:none}
+  .fm{grid-template-columns:1fr}.fm nav{display:flex;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .kit{grid-template-columns:1fr;gap:2px}.kit dd{margin-bottom:8px}
+  .meters{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

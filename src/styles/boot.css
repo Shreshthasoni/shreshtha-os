@@ -1,0 +1,19 @@
+/* ---------- boot ---------- */
+#boot{position:fixed;inset:0;z-index:500;background:#000;color:#bbb;display:flex;flex-direction:column}
+#boot .skip{position:absolute;right:16px;bottom:14px;color:#666;font-size:12px}
+.grub{margin:auto;width:min(640px,92vw);border:1px solid #888;padding:2px}
+.grub h1{margin:0;padding:8px 12px;text-align:center;font-size:13px;font-weight:400;color:#ddd}
+.grub ul{list-style:none;margin:0;padding:8px 0;border-top:1px solid #888;min-height:150px}
+.grub li{padding:2px 12px}
+.grub li.sel{background:#ddd;color:#000}
+.grub p{margin:0;padding:8px 12px;border-top:1px solid #888;font-size:12px;color:#999}
+.klog{padding:14px 18px;font-size:12.5px;line-height:1.55;white-space:pre-wrap;overflow:hidden}
+.ok{color:var(--acc)} .dim{color:#666}
+.login{margin:auto;text-align:center;display:grid;gap:14px;justify-items:center}
+.login .clock{font-size:clamp(54px,10vw,96px);font-weight:800;letter-spacing:-.04em;color:#e8efe9}
+.login .date{color:var(--muted);margin-top:-10px}
+.avatar{width:84px;height:84px;border-radius:50%;border:2px solid var(--acc);display:grid;place-items:center;font-weight:800;font-size:28px;color:var(--acc);background:var(--acc-dim)}
+.pw{width:260px;border:1px solid var(--line);background:#0c1113;padding:10px 12px;text-align:left;color:var(--fg);min-height:40px}
+.pw .cur{display:inline-block;width:8px;height:16px;background:var(--acc);vertical-align:-3px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+

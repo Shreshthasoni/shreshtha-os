@@ -1,0 +1,19 @@
+/* windows */
+.win{position:absolute;display:flex;flex-direction:column;background:var(--win);border:1px solid var(--line);box-shadow:0 18px 50px rgba(0,0,0,.55);min-width:280px;min-height:160px;border-radius:6px;overflow:hidden;animation:pop .16s ease-out}
+@keyframes pop{from{transform:scale(.97);opacity:0}}
+.win.focus{border-color:color-mix(in srgb,var(--acc) 60%,var(--line));box-shadow:0 22px 60px rgba(0,0,0,.65),0 0 0 1px color-mix(in srgb,var(--acc) 20%,transparent)}
+.win.max{border-radius:0}
+.win.hide{display:none}
+.tbar{height:30px;flex:none;display:flex;align-items:center;gap:8px;padding:0 6px 0 10px;background:var(--win-2);border-bottom:1px solid var(--line);cursor:default;user-select:none;touch-action:none}
+.tbar svg{width:14px;height:14px;color:var(--acc);flex:none}
+.tbar b{flex:1;font-weight:500;font-size:12px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--muted)}
+.win.focus .tbar b{color:var(--fg)}
+.wb{display:flex;gap:2px}
+.wb button{width:26px;height:22px;border:0;background:none;color:var(--muted);cursor:pointer;border-radius:3px;font-size:13px;line-height:1}
+.wb button:hover{background:rgba(255,255,255,.08);color:var(--fg)}
+.wb button.x:hover{background:var(--red);color:#000}
+.wbody{flex:1;min-height:0;overflow:auto;position:relative}
+.grip{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:nwse-resize;touch-action:none;background:linear-gradient(135deg,transparent 50%,var(--line) 50% 60%,transparent 60% 70%,var(--line) 70% 80%,transparent 80%)}
+
+.win:focus{outline:none}
+.tbar:focus-visible{outline:1px solid var(--acc);outline-offset:-2px}

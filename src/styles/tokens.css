@@ -1,0 +1,16 @@
+/* Layout idea: a Linux desktop. GRUB, kernel log and login lead into a tiling-flavoured
+   window manager: top panel with workspaces and tray, dock at the bottom, overlapping windows.
+   Every piece of the portfolio is a file, a command or an app. */
+:root{
+  --acc:#3dff8f; --acc-dim:color-mix(in srgb,var(--acc) 22%,transparent);
+  --bg:#07090a; --wall:#0b0f10; --panel:#0d1214; --win:#0f1517; --win-2:#141c1f; --line:#1f2a2e; --fg:#cfd8d3; --muted:#7c8a86;
+  --red:#ff5f6d; --yellow:#ffd166; --blue:#5cc8ff; --magenta:#ff7ad9; --orange:#ff9f43;
+  --f:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box} html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f);font-size:13.5px;overflow:hidden;-webkit-font-smoothing:antialiased}
+a{color:var(--acc)} button{font-family:inherit} ::selection{background:var(--acc);color:#000}
+:focus-visible{outline:1px solid var(--acc);outline-offset:2px}
+.scan::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
+

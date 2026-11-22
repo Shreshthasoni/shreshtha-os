@@ -1,0 +1,8 @@
+/* terminal */
+.term{background:#050807;color:#cfe3d6;font-size:13.5px;line-height:1.5;padding:10px 12px;min-height:100%;cursor:text}
+.term pre{margin:0;font:inherit;white-space:pre-wrap;word-break:break-word}
+.tline{display:flex;gap:8px;align-items:baseline}
+.tline input{flex:1;min-width:40px;background:transparent;border:0;outline:0;color:#fff;font:inherit;caret-color:var(--acc);padding:0}
+.c-acc{color:var(--acc)} .c-b{color:var(--blue)} .c-y{color:var(--yellow)} .c-r{color:var(--red)} .c-m{color:var(--magenta)} .c-o{color:var(--orange)} .c-d{color:var(--muted)} .c-w{color:#fff;font-weight:700}
+.bar{display:inline-block;height:10px;background:var(--acc);vertical-align:0}
+
