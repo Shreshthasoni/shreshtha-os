@@ -3,13 +3,14 @@
  * No JavaScript: ATS tools, search engines and screen readers get the whole CV as semantic HTML.
  */
 import { GITHUB_URL, SITE_URL, profile, projectLinks } from "../src/data/profile.ts";
+import { OG_IMAGE } from "./og.ts";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 const list = (items: string[]) => `<ul>${items.map(i => `<li>${esc(i)}</li>`).join("")}</ul>`;
 
 export function renderResumePage(): string {
   const p = profile, c = p.contact;
-  const description = `${p.name} (${p.nick}), ${p.title}. B.Tech CSE student at ${p.education.school}, ${p.city}. Experience, projects, skills and contact details.`;
+  const description = `${p.name} (${p.nick}) · ${p.title} · B.Tech CSE student at ${p.education.school}, ${p.city}. Experience, projects, skills and contact details.`;
   const jsonLd = {
     "@context": "https://schema.org", "@type": "Person",
     name: p.name, alternateName: p.nick, jobTitle: p.title, email: `mailto:${c.email}`, telephone: c.phone, url: SITE_URL,
@@ -31,11 +32,11 @@ export function renderResumePage(): string {
 <meta property="og:title" content="${esc(p.name)} · Resume">
 <meta property="og:description" content="${esc(description)}">
 <meta property="og:url" content="${SITE_URL}/resume">
-<meta property="og:image" content="${SITE_URL}/og.png">
+<meta property="og:image" content="${OG_IMAGE}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="${SITE_URL}/og.png">
+<meta name="twitter:image" content="${OG_IMAGE}">
 <meta name="theme-color" content="#07090a">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">

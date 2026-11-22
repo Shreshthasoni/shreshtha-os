@@ -7,11 +7,12 @@
 import type { Connect, Plugin } from "vite";
 import { GITHUB_URL, SITE_URL, profile } from "../src/data/profile.ts";
 import { renderResumePage } from "./resume-page.ts";
+import { OG_IMAGE } from "./og.ts";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
 const TITLE = `${profile.name} · ${profile.title} | Shreshtha OS`;
-const DESCRIPTION = `Portfolio of ${profile.name} (${profile.nick}), ${profile.title}. B.Tech CSE student at ${profile.education.school}, ${profile.city}. Built as a tiny Linux desktop: boot it, open the terminal and type help.`;
+const DESCRIPTION = `${profile.name} (${profile.nick}) · ${profile.title} · B.Tech CSE student at ${profile.education.school}, ${profile.city}. A portfolio built as a tiny Linux desktop: boot it, open the terminal and type help.`;
 const OG_ALT = `${profile.name}, ${profile.title}: terminal-style card`;
 
 function seoTags(): string {
@@ -37,7 +38,7 @@ function seoTags(): string {
     `<meta property="og:title" content="${esc(TITLE)}">`,
     `<meta property="og:description" content="${esc(DESCRIPTION)}">`,
     `<meta property="og:url" content="${SITE_URL}/">`,
-    `<meta property="og:image" content="${SITE_URL}/og.png">`,
+    `<meta property="og:image" content="${OG_IMAGE}">`,
     `<meta property="og:image:width" content="1200">`,
     `<meta property="og:image:height" content="630">`,
     `<meta property="og:image:alt" content="${esc(OG_ALT)}">`,
@@ -45,7 +46,7 @@ function seoTags(): string {
     `<meta name="twitter:card" content="summary_large_image">`,
     `<meta name="twitter:title" content="${esc(TITLE)}">`,
     `<meta name="twitter:description" content="${esc(DESCRIPTION)}">`,
-    `<meta name="twitter:image" content="${SITE_URL}/og.png">`,
+    `<meta name="twitter:image" content="${OG_IMAGE}">`,
     `<meta name="twitter:image:alt" content="${esc(OG_ALT)}">`,
     `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, "\\u003c")}</script>`
   ].join("\n");
