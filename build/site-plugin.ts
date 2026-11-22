@@ -37,7 +37,6 @@ function seoTags(): string {
     `<meta property="og:site_name" content="Shreshtha OS">`,
     `<meta property="og:title" content="${esc(TITLE)}">`,
     `<meta property="og:description" content="${esc(DESCRIPTION)}">`,
-    `<meta property="og:url" content="${SITE_URL}/">`,
     `<meta property="og:image" content="${OG_IMAGE}">`,
     `<meta property="og:image:width" content="1200">`,
     `<meta property="og:image:height" content="630">`,

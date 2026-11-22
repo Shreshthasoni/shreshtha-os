@@ -31,7 +31,6 @@ export function renderResumePage(): string {
 <meta property="og:type" content="profile">
 <meta property="og:title" content="${esc(p.name)} · Resume">
 <meta property="og:description" content="${esc(description)}">
-<meta property="og:url" content="${SITE_URL}/resume">
 <meta property="og:image" content="${OG_IMAGE}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
