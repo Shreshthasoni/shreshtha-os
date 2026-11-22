@@ -13,6 +13,7 @@ export function hl(text: string, name: string): string {
     l.startsWith("## ") ? `<span class="h2">${l}</span>`
     : l.startsWith("# ") ? `<span class="h1">${l}</span>`
     : l.startsWith("- ") ? `<span class="li">-</span>${l.slice(1)}`
+    : /^link: https?:\/\//.test(l) ? l.replace(/^link: (\S+)/, '<span class="kw">link:</span> <a href="$1" target="_blank" rel="noopener">$1</a>')
     : /^(status|stack):/.test(l) ? l.replace(/^(\w+):/, '<span class="kw">$1:</span>')
     : l).join("\n");
 }

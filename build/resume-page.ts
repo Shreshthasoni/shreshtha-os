@@ -2,7 +2,7 @@
  * The plain /resume page, rendered at build time from src/data/profile.ts.
  * No JavaScript: ATS tools, search engines and screen readers get the whole CV as semantic HTML.
  */
-import { GITHUB_URL, SITE_URL, profile } from "../src/data/profile.ts";
+import { GITHUB_URL, SITE_URL, profile, projectLinks } from "../src/data/profile.ts";
 
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 const list = (items: string[]) => `<ul>${items.map(i => `<li>${esc(i)}</li>`).join("")}</ul>`;
@@ -64,6 +64,7 @@ h3{margin:0;font-size:17px}
 .org{margin:2px 0 6px}
 ul{margin:6px 0 0;padding-left:20px}
 li{margin-bottom:4px}
+.links{margin:4px 0 0;font-size:15px;font-weight:600}
 .stack{font-size:14px;color:var(--muted);margin-top:6px}
 dl{display:grid;grid-template-columns:170px 1fr;gap:6px 16px;margin:0}
 dt{font-weight:600}
@@ -116,7 +117,7 @@ ${p.projects.map(pr => `<article>
 <div class="head"><h3>${esc(pr.name)}</h3><span class="when">${esc(pr.status)}</span></div>
 <p class="org">${esc(pr.tagline)}</p>
 ${list(pr.bullets)}
-<p class="stack">Stack: ${esc(pr.stack.join(", "))}</p>
+<p class="stack">Stack: ${esc(pr.stack.join(", "))}</p>${projectLinks(pr).length ? `\n<p class="links">${projectLinks(pr).map(l => `<a href="${esc(l.url)}">${esc(l.label)}</a>`).join(" · ")}</p>` : ""}
 </article>`).join("\n")}
 </section>
 

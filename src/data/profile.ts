@@ -32,6 +32,8 @@ export interface Project {
   tagline: string;
   bullets: string[];
   stack: string[];
+  /** Public links (download, live site). Entries with an empty url are hidden. */
+  links?: { label: string; url: string }[];
 }
 
 export const profile = {
@@ -85,12 +87,14 @@ export const profile = {
     {
       name: "Galla", status: "Live on Google Play", tagline: "Business management app for small shop owners",
       bullets: ["Designed, built and published the Android app, from closed testing to public release.", "Backend APIs and relational database, deployed on AWS."],
-      stack: ["Android", "REST APIs", "SQL", "AWS"]
+      stack: ["Android", "REST APIs", "SQL", "AWS"],
+      links: [{ label: "Get it on Google Play", url: "" }] // TODO: Play Store URL
     },
     {
       name: "School Management ERP", status: "In production", tagline: "A lean alternative to bloated school ERPs",
       bullets: ["Admin uploads student data once; it stays in sync in real time for teachers and parents.", "Role-based access and fast lookup by student name or roll number."],
-      stack: ["Python", "Next.js", "SQL", "Docker", "AWS"]
+      stack: ["Python", "Next.js", "SQL", "Docker", "AWS"],
+      links: [{ label: "Open the live site", url: "" }] // TODO: live URL
     },
     {
       name: "Micro Path Labs", status: "Live", tagline: "Test-booking website for a pathology lab (client)",
@@ -160,6 +164,9 @@ export const PROCESSES: [string, string, number][] = [
   ["g++ dsa.cpp", "dsa", 25], ["java", "dsa", 8], ["postgres", "data", 7], ["mysqld", "data", 6], ["dockerd", "infra", 11],
   ["aws-cli", "infra", 8], ["git", "tooling", 5], ["sklearn --learn", "ml", 19], ["photoshop", "design", 4], ["premiere", "design", 3], ["chai", "fuel", 31]
 ];
+
+/** A project's links that have a URL. */
+export const projectLinks = (p: Project) => (p.links ?? []).filter(l => l.url);
 
 /** Years and months since `profile.education.started`, e.g. "2 years, 4 months". */
 export function uptime(now = new Date()): { years: number; months: number; long: string; short: string } {

@@ -1,5 +1,5 @@
 /** The virtual home folder, built from profile.ts. Used by the terminal, Files and Editor. */
-import { profile, type Job, type Project } from "../data/profile";
+import { profile, projectLinks, type Job, type Project } from "../data/profile";
 
 export type FileNode = { type: "file"; text: () => string; hidden?: boolean };
 export type PdfNode = { type: "pdf"; hidden?: boolean };
@@ -9,7 +9,7 @@ export type VNode = FileNode | PdfNode | DirNode;
 const md = {
   about: () => `# about.txt\n\n${profile.about.join("\n\n")}\n`,
   work: (w: Job) => `# ${w.role}\n## ${w.org}\n## ${w.when}\n\n${w.bullets.map(b => "- " + b).join("\n")}\n`,
-  proj: (p: Project) => `# ${p.name}\n## ${p.tagline}\nstatus: ${p.status}\n\n${p.bullets.map(b => "- " + b).join("\n")}\n\nstack: ${p.stack.join(", ")}\n`,
+  proj: (p: Project) => `# ${p.name}\n## ${p.tagline}\nstatus: ${p.status}\n\n${p.bullets.map(b => "- " + b).join("\n")}\n\nstack: ${p.stack.join(", ")}\n${projectLinks(p).map(l => `link: ${l.url}\n`).join("")}`,
   skills: () => "{\n" + Object.entries(profile.skills).map(([k, v]) => `  "${k}": [${v.map(s => `"${s}"`).join(", ")}]`).join(",\n") + "\n}\n",
   vcf: () => `BEGIN:VCARD\nVERSION:4.0\nFN:${profile.name}\nNICKNAME:${profile.nick}\nTITLE:${profile.title}\nEMAIL:${profile.contact.email}\nTEL;VALUE=uri:tel:${profile.contact.phone}\nURL:https://${profile.contact.linkedin}\nURL:https://${profile.contact.github}\nADR:${profile.contact.place}\nEND:VCARD\n`
 };

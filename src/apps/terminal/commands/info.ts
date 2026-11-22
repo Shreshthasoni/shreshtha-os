@@ -1,6 +1,6 @@
 /** About-me commands: neofetch, whoami, projects, experience, skills, contact, resume. */
-import { isNarrow } from "../../../lib/dom";
-import { GITHUB_URL, profile, uptime } from "../../../data/profile";
+import { esc, escText, isNarrow } from "../../../lib/dom";
+import { GITHUB_URL, profile, projectLinks, uptime } from "../../../data/profile";
 import { openApp } from "../../registry";
 import { register } from "../registry";
 
@@ -44,9 +44,9 @@ register(
   },
   {
     name: "projects", usage: "projects", summary: "what I've shipped",
-    description: "Lists shipped projects with their status and stack. Each one also has a README under ~/projects.",
+    description: "Lists shipped projects with their status, stack and links (download or live site). Each one also has a README under ~/projects.",
     examples: ["projects", "projects | grep AWS"],
-    run: () => profile.projects.map(p => `<span class="c-acc">●</span> <span class="c-w">${p.name}</span> <span class="c-y">[${p.status}]</span>\n  ${p.tagline}\n  <span class="c-d">${p.stack.join(" · ")}</span>`).join("\n\n") + `\n\n<span class="c-d">details: cd projects &amp;&amp; ls, or: open projects</span>`
+    run: () => profile.projects.map(p => `<span class="c-acc">●</span> <span class="c-w">${p.name}</span> <span class="c-y">[${p.status}]</span>\n  ${p.tagline}\n  <span class="c-d">${p.stack.join(" · ")}</span>${projectLinks(p).map(l => `\n  <span class="c-acc">↗</span> <a href="${esc(l.url)}" target="_blank" rel="noopener">${escText(l.label)}</a>`).join("")}`).join("\n\n") + `\n\n<span class="c-d">details: cd projects &amp;&amp; ls, or: open projects</span>`
   },
   {
     name: "experience", usage: "experience", summary: "where I've worked",
