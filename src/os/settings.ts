@@ -5,7 +5,7 @@ export const ACCENTS: Record<string, string> = { green: "#3dff8f", amber: "#ffb4
 export const WALLPAPERS = ["grid", "matrix", "plain"] as const;
 
 export interface Settings { accent: string; wall: (typeof WALLPAPERS)[number]; scan: boolean; boot: boolean }
-export const settings: Settings = Object.assign({ accent: "green", wall: "grid", scan: false, boot: true }, store.get<Partial<Settings>>("settings", {}));
+export const settings: Settings = Object.assign({ accent: "green", wall: "matrix", scan: false, boot: true }, store.get<Partial<Settings>>("settings", {}));
 
 const listeners = new Set<(s: Settings) => void>();
 export const onSettings = (fn: (s: Settings) => void) => { listeners.add(fn); };
