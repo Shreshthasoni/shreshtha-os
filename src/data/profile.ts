@@ -5,8 +5,8 @@
  * Keep it plain data (no DOM code): the build also imports it to generate static pages.
  */
 
-/** Your GitHub username. Change it here only. TODO: confirm this is your real username. */
-export const GITHUB_USERNAME = "shreshtha-soni";
+/** Your GitHub username. Change it here only. */
+export const GITHUB_USERNAME = "Shreshthasoni";
 
 /**
  * The public URL the site will live at (no trailing slash). Used for the canonical URL,
@@ -14,6 +14,12 @@ export const GITHUB_USERNAME = "shreshtha-soni";
  * TODO: replace with your custom domain (or your real *.vercel.app URL) once deployed.
  */
 export const SITE_URL = "https://shreshtha-os.vercel.app";
+
+/**
+ * Repos to feature in the GitHub app, in order (exact repo names). GitHub's public API doesn't expose
+ * your profile pins, so list them here. Leave empty to show your most recently updated repos.
+ */
+export const GITHUB_PINNED: string[] = [];
 
 export const GITHUB_URL = `https://github.com/${GITHUB_USERNAME}`;
 

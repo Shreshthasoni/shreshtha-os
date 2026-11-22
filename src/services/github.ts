@@ -3,7 +3,7 @@
  * - Responses are cached in localStorage for 1 hour (the unauthenticated limit is 60 requests/hour per IP).
  * - On error or rate limit: use an expired cache if there is one, otherwise the static FALLBACK_PINS.
  */
-import { FALLBACK_PINS, GITHUB_URL, GITHUB_USERNAME } from "../data/profile";
+import { FALLBACK_PINS, GITHUB_PINNED, GITHUB_URL, GITHUB_USERNAME } from "../data/profile";
 import { store } from "../lib/dom";
 
 export interface Repo {
@@ -91,9 +91,15 @@ export function getRepos(force = false): Promise<RepoResult> {
   return inflight;
 }
 
-/** Repos worth pinning: own (not forked), not archived, not the profile-README repo. Up to 6. */
-export const pinnable = (repos: Repo[]) =>
-  repos.filter(r => !r.fork && !r.archived && r.name.toLowerCase() !== GITHUB_USERNAME.toLowerCase()).slice(0, 6);
+/**
+ * Repos to feature: the ones named in GITHUB_PINNED (in that order) if any match; otherwise the most
+ * recently updated own repos (not forked, not archived, not the profile-README repo). Up to 6.
+ */
+export function pinnable(repos: Repo[]): Repo[] {
+  const chosen = GITHUB_PINNED.map(n => repos.find(r => r.name.toLowerCase() === n.toLowerCase())).filter((r): r is Repo => !!r);
+  if (chosen.length) return chosen.slice(0, 6);
+  return repos.filter(r => !r.fork && !r.archived && r.name.toLowerCase() !== GITHUB_USERNAME.toLowerCase()).slice(0, 6);
+}
 
 /** First part of a repo's README as plain text (cached for 1 hour), or null if there is none. */
 export async function getReadme(name: string): Promise<string | null> {
