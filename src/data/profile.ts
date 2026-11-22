@@ -53,7 +53,7 @@ export const profile = {
   initials: "SS",
   /** Profile photo in public/ (square; shown cropped to a circle). Set to "" to show the initials instead. */
   photo: "/avatar.jpg",
-  title: "AI/ML and software developer",
+  title: "Software developer and AI/ML engineer",
   city: "Jaipur",
   location: "Jaipur, India",
   line: "B.Tech CSE student at JECRC University, Jaipur. I build products and ship them to real users.",
