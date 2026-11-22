@@ -23,3 +23,5 @@
 .dk:hover .tip,.dk:focus-visible .tip{opacity:1}
 
 #ghlink{text-decoration:none}
+.pbtn.plain{text-decoration:none;border:1px solid var(--line);padding:2px 8px}
+.pbtn.plain:hover{border-color:var(--acc);color:var(--acc)}

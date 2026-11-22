@@ -14,3 +14,7 @@ a{color:var(--acc)} button{font-family:inherit} ::selection{background:var(--acc
 :focus-visible{outline:1px solid var(--acc);outline-offset:2px}
 .scan::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
 
+.skip-link{position:fixed;left:8px;top:-60px;z-index:10000;background:var(--acc);color:#000;font-weight:700;padding:8px 12px;border-radius:4px;text-decoration:none}
+.skip-link:focus{top:8px}
+.nojs{max-width:720px;margin:0 auto;padding:48px 20px;line-height:1.6;font-size:15px}
+.nojs h1{color:var(--acc);margin:0 0 4px}

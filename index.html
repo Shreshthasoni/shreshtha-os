@@ -3,10 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Shreshtha OS</title>
+<!--seo-->
+<noscript><style>#boot,#panel,#desk,#dock{display:none!important}body{overflow:auto!important}</style></noscript>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap">
 </head>
 <body>
+<a class="skip-link" href="/resume">Skip to the plain resume</a>
+<!--noscript-->
 <div id="boot" aria-hidden="true"><span class="skip">click or press Esc to skip</span></div>
 <canvas id="matrix" aria-hidden="true"></canvas>
 
@@ -15,6 +18,7 @@
   <div class="ws" id="ws" role="group" aria-label="Workspaces"></div>
   <div class="ptitle" id="ptitle"></div>
   <div class="tray">
+    <a class="pbtn plain" href="/resume" title="A plain, printable resume (no JavaScript)">Plain view</a>
     <a class="pbtn hide-s" href="" id="ghlink" target="_blank" rel="noopener"></a>
     <span class="hide-s" aria-hidden="true">cpu <canvas id="cpu" width="60" height="16"></canvas></span>
     <span class="hide-s" aria-hidden="true">net <b>▲▼</b></span>
