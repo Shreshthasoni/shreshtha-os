@@ -11,3 +11,14 @@
   .meters{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* phones: a mobile OS. One full-screen app at a time; Home and Recent apps live at the start of the dock. */
+@media (max-width:760px){
+  .ws{display:none}
+  #dock{left:0;right:0;bottom:0;transform:none;max-width:none;border-radius:0;border-width:1px 0 0;padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+  .dnav{display:flex;gap:6px;position:sticky;left:-8px;z-index:1;background:var(--panel);margin-left:-8px;padding:0 8px;border-right:1px solid var(--line);margin-right:2px}
+  .dk .tip{display:none}
+  .win{height:calc(100% - 55px - env(safe-area-inset-bottom))!important}
+  .win .wb button[aria-label="Maximise"]{display:none}
+  .logo-cap{bottom:76px}
+}

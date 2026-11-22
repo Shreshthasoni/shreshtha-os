@@ -48,6 +48,7 @@ export const stack = (): Win[] => [...WINS].filter(w => w.ws === wm.ws && !isHid
 
 /** Bring a window to the front. `moveFocus` also moves keyboard focus into it. */
 export function focusWin(w: Win, moveFocus = false): void {
+  if (isNarrow()) WINS.forEach(x => { if (x !== w) x.el.classList.add("hide"); }); // phone: one app at a time
   WINS.forEach(x => x.el.classList.remove("focus"));
   w.el.classList.add("focus");
   w.el.style.zIndex = String(++Z);
@@ -190,6 +191,14 @@ export function switchWS(n: number): void {
   WINS.forEach(w => { w.el.style.display = w.ws === n ? "" : "none"; });
   changed();
 }
+
+// Rotating a tablet or shrinking the window into phone layout: keep only the focused app visible.
+let wasNarrow = isNarrow();
+addEventListener("resize", () => {
+  const n = isNarrow();
+  if (n && !wasNarrow) { const f = focused() ?? stack()[0]; if (f) focusWin(f); }
+  wasNarrow = n;
+});
 
 /** Alt+`: bring the bottom-most window of this workspace to the front. */
 export function cycleWindows(): void {
