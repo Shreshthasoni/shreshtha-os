@@ -1,30 +1,73 @@
 /** Shell and system commands: help, man, history, clear, exit, echo, date, uname, htop, theme, matrix and app launchers. */
-import { escText } from "../../../lib/dom";
+import { escText, isNarrow } from "../../../lib/dom";
 import { openApp } from "../../registry";
 import { ACCENTS, applySettings, settings } from "../../../os/settings";
 import { runMatrix } from "../../../os/matrix";
 import { closeWin } from "../../../os/wm";
-import { register } from "../registry";
+import { getCommand, register } from "../registry";
 
 /** What `help` lists, in order: [usage, summary]. */
 export const HELP: [string, string][] = [
-  ["help", "this list"], ["ls [-la] [dir]", "list files"], ["cd <dir>", "change directory"], ["pwd", "where am I"], ["cat <file>", "print a file"], ["tree", "the whole home folder"],
+  ["help", "this list"], ["man <command>", "manual for any command"], ["ls [-la] [dir]", "list files"], ["cd <dir>", "change directory"], ["pwd", "where am I"], ["cat <file>", "print a file"], ["tree", "the whole home folder"],
   ["open <path>", "open a file or folder in an app"], ["neofetch", "system info (it's me)"], ["whoami", "short intro"], ["projects", "what I've shipped"], ["experience", "where I've worked"],
   ["skills", "skill meters"], ["git log", "career as commits"], ["gh", "my GitHub profile"], ["gh repo list", "public repos (live)"], ["gh repo view <n>", "one repo + README"], ["htop", "process monitor"], ["contact", "how to reach me"], ["resume", "open resume.pdf"],
-  ["theme <name>", "green | amber | cyan | pink | white"], ["matrix", "follow the white rabbit"], ["history", "past commands"], ["clear", "clear screen"], ["exit", "close this terminal"]];
+  ["theme <name>", "green | amber | cyan | pink | white"], ["matrix", "follow the white rabbit"], ["cowsay [text]", "a cow says it"], ["history", "past commands"], ["clear", "clear screen"], ["exit", "close this terminal"]];
+
+/** Extra man pages that aren't commands. */
+const TOPICS: Record<string, { title: string; body: string }> = {
+  pipes: {
+    title: "pipes - send one command's output into another",
+    body: "Join commands with | and the text output of the left side becomes the input of the right side. Commands that read piped input: grep, head, tail, wc, sort, uniq, cowsay and cat.\n\n  cat skills.json | grep Python\n  git log | grep feat | wc -l\n  whoami | cowsay\n  skills | sort -rn | head -n 3"
+  }
+};
+
+/** Hard-wrap a paragraph to `width` columns with a man-page indent. */
+function indent(text: string, width: number): string {
+  const pad = "       ";
+  return text.split("\n").map(para => {
+    if (/^\s/.test(para) || !para) return pad + para;
+    const out: string[] = []; let line = "";
+    for (const w of para.split(" ")) { if ((line + " " + w).trim().length > width) { out.push(line); line = w; } else line = (line + " " + w).trim(); }
+    if (line) out.push(line);
+    return out.map(l => pad + l).join("\n");
+  }).join("\n");
+}
+
+function manPage(name: string): string | null {
+  const width = isNarrow() ? 34 : 64;
+  const H = (s: string) => `<span class="c-w">${s}</span>`;
+  const topic = TOPICS[name];
+  const c = topic ? null : getCommand(name);
+  if (!topic && !c) return null;
+  const title = (c?.name ?? name).toUpperCase() + "(1)";
+  const head = isNarrow() ? `<span class="c-d">${title}</span>` : `<span class="c-d">${title.padEnd(26)}Shreshtha OS Manual${title.padStart(26)}</span>`;
+  if (topic) return `${head}\n\n${H("NAME")}\n${indent(escText(topic.title), width)}\n\n${H("DESCRIPTION")}\n${indent(escText(topic.body), width)}`;
+  const cmd = c!;
+  const parts = [
+    head, "",
+    H("NAME"), indent(escText(`${cmd.name} - ${cmd.summary}`), width), "",
+    H("SYNOPSIS"), indent(escText(cmd.usage), width), "",
+    H("DESCRIPTION"), indent(escText(cmd.description), width)
+  ];
+  if (cmd.aliases?.length) parts.push("", H("ALIASES"), indent(cmd.aliases.join(", "), width));
+  if (cmd.examples?.length) parts.push("", H("EXAMPLES"), cmd.examples.map(e => `       <span class="c-acc">$</span> ${escText(e)}`).join("\n"));
+  parts.push("", H("SEE ALSO"), indent("help, man pipes" + (name === "man" ? "" : ", man man"), width));
+  return parts.join("\n");
+}
 
 register(
   {
     name: "help", usage: "help", summary: "this list",
-    description: "Lists the main commands. Some commands are hidden: explore.",
-    run: () => '<span class="c-w">Shreshtha OS shell</span>, the commands that matter:\n' + HELP.map(([c, d]) => `  <span class="c-acc">${escText(c).padEnd(16)}</span> ${d}`).join("\n") + '\n<span class="c-d">Tab completes, ↑↓ walks history. Some commands are hidden.</span>'
+    description: "Lists the main commands. More are hidden: `man <command>` explains any of them, and `man pipes` shows how to chain them.",
+    run: () => '<span class="c-w">Shreshtha OS shell</span>, the commands that matter:\n' + HELP.map(([c, d]) => `  <span class="c-acc">${escText(c.padEnd(16))}</span> ${d}`).join("\n") + '\n<span class="c-d">Pipes work too:</span> <span class="c-acc">cat skills.json | grep Python</span> <span class="c-d">(see man pipes)</span>\n<span class="c-d">Tab completes, ↑↓ walks history. Some commands are hidden.</span>'
   },
   {
     name: "man", usage: "man <command>", summary: "manual for a command",
+    description: "Shows the manual page for a command: what it does, its options and examples. Every command has one. `man pipes` explains chaining commands with |.",
+    examples: ["man ls", "man grep", "man pipes"],
     run: a => {
-      if (!a[0]) return "What manual page do you want?";
-      const h = HELP.find(x => x[0].split(" ")[0] === a[0]);
-      return h ? `${a[0]}: ${h[1]}` : `No manual entry for ${escText(a[0])}`;
+      if (!a[0]) return "What manual page do you want?\n<span class=\"c-d\">For example: man ls, man gh, man pipes</span>";
+      return manPage(a[0].toLowerCase()) ?? `No manual entry for ${escText(a[0])}`;
     }
   },
   {

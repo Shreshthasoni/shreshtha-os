@@ -1,5 +1,5 @@
 /** Terminal: the shell window. Commands live in ./commands and register themselves. */
-import { $, escText, store } from "../../lib/dom";
+import { $, escText, htmlToText, store } from "../../lib/dom";
 import { pathStr, resolve } from "../../fs/vfs";
 import { makeWin, type Win } from "../../os/wm";
 import { commandNames, getCommand, type Ctx, type Output } from "./registry";
@@ -7,9 +7,29 @@ import { neofetch } from "./commands/info";
 import "./commands/fs";
 import "./commands/dev";
 import "./commands/system";
+import "./commands/text";
 import "./commands/fun";
 
 export interface TermOpts { intro?: boolean; w?: number; h?: number; x?: number; y?: number }
+
+/**
+ * Split a command line into pipeline stages of words. Handles "double" and 'single' quotes,
+ * so `grep "full stack"` is one argument and a | inside quotes is not a pipe.
+ */
+export function parseLine(line: string): string[][] {
+  const stages: string[][] = [[]];
+  let word: string | null = null, quote: string | null = null;
+  const end = () => { if (word !== null) { stages[stages.length - 1].push(word); word = null; } };
+  for (const ch of line) {
+    if (quote) { if (ch === quote) quote = null; else word += ch; }
+    else if (ch === '"' || ch === "'") { quote = ch; word ??= ""; }
+    else if (ch === "|") { end(); stages.push([]); }
+    else if (/\s/.test(ch)) end();
+    else word = (word ?? "") + ch;
+  }
+  end();
+  return stages;
+}
 
 function lev(a: string, b: string): number {
   const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
@@ -43,25 +63,45 @@ export function open(opts: TermOpts = {}): Win {
 
   const show = (r: Output) => { if (r !== null && r !== undefined && r !== "") print(r); };
 
-  function run(line: string): void {
+  /** Run a line: one command, or a pipeline (`a | b | c`) where each stage gets the previous stage's text. */
+  async function run(line: string): Promise<void> {
     print(`${prompt()} ${escText(line)}`);
     if (!line.trim()) return;
     hist.push(line); hist = hist.slice(-60); store.set("hist", hist); hi = hist.length;
-    const parts = line.trim().split(/\s+/), cmd = parts[0].toLowerCase(), args = parts.slice(1);
-    const c = getCommand(cmd);
-    if (!c) {
-      const best = commandNames().map(n => [n, lev(cmd, n)] as const).sort((a, b) => a[1] - b[1])[0];
-      print(`<span class="c-r">${escText(cmd)}: command not found</span>${best[1] <= 2 ? `. Did you mean <span class="c-acc">${best[0]}</span>?` : '. Type <span class="c-acc">help</span>.'}`);
-      return;
+    const stages = parseLine(line);
+    if (stages.some(s => !s.length)) { print(`<span class="c-r">syntax error near unexpected token \`|'</span>`); return; }
+    let stdin: string | null = null;
+    for (let i = 0; i < stages.length; i++) {
+      const cmd = stages[i][0].toLowerCase(), args = stages[i].slice(1);
+      const c = getCommand(cmd);
+      if (!c) {
+        const best = commandNames().map(n => [n, lev(cmd, n)] as const).sort((a, b) => a[1] - b[1])[0];
+        print(`<span class="c-r">${escText(cmd)}: command not found</span>${best[1] <= 2 ? `. Did you mean <span class="c-acc">${best[0]}</span>?` : '. Type <span class="c-acc">help</span>.'}`);
+        return;
+      }
+      ctx.stdin = stdin;
+      let r: Output;
+      try {
+        const res = c.run(args, ctx);
+        r = isPromise(res) ? await res : res; // only await real promises, so plain commands print synchronously
+      } catch (e) {
+        print(`<span class="c-r">${escText(cmd)}: ${escText(e instanceof Error ? e.message : e)}</span>`);
+        return;
+      } finally { ctx.stdin = null; }
+      if (i === stages.length - 1) show(r);
+      else stdin = htmlToText(r ?? "");
     }
-    ctx.stdin = null;
-    const r = c.run(args, ctx);
-    if (isPromise(r)) r.then(show, e => print(`<span class="c-r">${escText(cmd)}: ${escText(e instanceof Error ? e.message : e)}</span>`));
-    else show(r);
   }
 
   function complete(): void {
     const v = inp.value, parts = v.split(/\s+/);
+    const afterPipe = parts.length >= 2 && parts[parts.length - 2].endsWith("|");
+    if (afterPipe) { // complete a command name after a pipe
+      const last = parts[parts.length - 1], m = commandNames().filter(c => c.startsWith(last)).sort();
+      if (m.length === 1) { parts[parts.length - 1] = m[0] + " "; inp.value = parts.join(" "); }
+      else if (m.length) print(`${prompt()} ${escText(v)}\n${m.join("  ")}`);
+      return;
+    }
     if (parts.length <= 1) {
       const m = commandNames().filter(c => c.startsWith(parts[0])).sort();
       if (m.length === 1) inp.value = m[0] + " ";

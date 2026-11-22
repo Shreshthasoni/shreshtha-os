@@ -28,7 +28,7 @@ export interface Command {
   /** one-line summary shown in `help` */
   summary: string;
   /** longer text for `man` */
-  description?: string;
+  description: string;
   examples?: string[];
   /** other names that run this command */
   aliases?: string[];

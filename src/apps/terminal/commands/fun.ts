@@ -1,10 +1,43 @@
-/** Easter eggs: sudo, rm, ping, hack. */
-import { escText, reduceMotion } from "../../../lib/dom";
+/** Easter eggs: cowsay, sudo, rm, ping, hack. */
+import { escText, isNarrow, reduceMotion } from "../../../lib/dom";
 import { profile } from "../../../data/profile";
 import { openApp } from "../../registry";
 import { register } from "../registry";
 
+/** Word-wrap `text` to `width` columns. */
+function wrap(text: string, width: number): string[] {
+  const out: string[] = [];
+  for (const para of text.split("\n")) {
+    let line = "";
+    for (let word of para.split(/\s+/).filter(Boolean)) {
+      while (word.length > width) { if (line) { out.push(line); line = ""; } out.push(word.slice(0, width)); word = word.slice(width); }
+      if (!line) line = word;
+      else if ((line + " " + word).length <= width) line += " " + word;
+      else { out.push(line); line = word; }
+    }
+    if (line) out.push(line);
+  }
+  return out.length ? out : [""];
+}
+
+export function cowsay(text: string, width = 40): string {
+  const ls = wrap(text, width), w = Math.max(...ls.map(l => l.length));
+  const body = ls.length === 1 ? [`< ${ls[0]} >`]
+    : ls.map((l, i) => `${i === 0 ? "/" : i === ls.length - 1 ? "\\" : "|"} ${l.padEnd(w)} ${i === 0 ? "\\" : i === ls.length - 1 ? "/" : "|"}`);
+  return [" " + "_".repeat(w + 2), ...body, " " + "-".repeat(w + 2),
+    "        \\   ^__^", "         \\  (oo)\\_______", "            (__)\\       )\\/\\", "                ||----w |", "                ||     ||"].join("\n");
+}
+
 register(
+  {
+    name: "cowsay", usage: "cowsay [text]", summary: "a cow says it",
+    description: "A cow repeats your text in a speech bubble. With no text it reads piped input, so anything can be said by a cow.",
+    examples: ["cowsay hire Shreshtha", "whoami | cowsay", "projects | head -n 1 | cowsay"],
+    run: (a, ctx) => {
+      const text = a.length ? a.join(" ") : ctx.stdin?.trim() || "Moo. Try: sudo hire-me";
+      return `<span class="c-w">${escText(cowsay(text.length > 600 ? text.slice(0, 600) + "…" : text, isNarrow() ? 26 : 40))}</span>`;
+    }
+  },
   {
     name: "sudo", usage: "sudo <command>", summary: "run as root",
     description: "You are not root. There is one password that works.",

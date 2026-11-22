@@ -6,3 +6,5 @@
 .c-acc{color:var(--acc)} .c-b{color:var(--blue)} .c-y{color:var(--yellow)} .c-r{color:var(--red)} .c-m{color:var(--magenta)} .c-o{color:var(--orange)} .c-d{color:var(--muted)} .c-w{color:#fff;font-weight:700}
 .bar{display:inline-block;height:10px;background:var(--acc);vertical-align:0}
 
+.hit{color:var(--red);font-weight:700}
+.term a{color:var(--blue)}

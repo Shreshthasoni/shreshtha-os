@@ -20,7 +20,7 @@ async function repoList(): Promise<string> {
 }
 
 async function repoView(name: string | undefined, web: boolean): Promise<string> {
-  if (!name) return "usage: gh repo view <name> [--web]";
+  if (!name) return "usage: gh repo view &lt;name&gt; [--web]";
   const res = await getRepos();
   const repo = res.repos.find(r => r.name.toLowerCase() === name.toLowerCase());
   if (!repo) {
