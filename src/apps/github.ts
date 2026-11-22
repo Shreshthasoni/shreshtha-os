@@ -18,7 +18,7 @@ export function open(): Win {
       <div class="gh-side"><div class="av" aria-hidden="true">${avatarImg()}</div><h2>${profile.name}</h2><div class="handle">${escText(GITHUB_USERNAME)}</div>
         <p>${profile.title}. I build products and ship them to real users.</p>
         <a class="btn solid" href="${GITHUB_URL}" target="_blank" rel="noopener">Open GitHub profile</a><button class="btn ghcopy" type="button">Copy link</button>
-        <div class="meta"><span>loc  <b>${profile.location}</b></span><span>edu  <b>B.Tech CSE, JECRC '${profile.education.gradYear.slice(2)}</b></span><span>mail <b>${c.email}</b></span><span>in   <a href="https://${c.linkedin}" target="_blank" rel="noopener">${c.linkedin}</a></span></div>
+        <div class="meta"><span>loc  <b>${profile.location}</b></span><span>edu  <b>B.Tech CSE, JECRC '${profile.education.gradYear.slice(2)}</b></span><span>mail <b>${c.email}</b></span><span>tel  <a href="tel:${c.phone}">${c.phoneDisplay}</a></span><span>in   <a href="https://${c.linkedin}" target="_blank" rel="noopener">${c.linkedin}</a></span></div>
       </div>
       <div>
         <div class="gh-readme"><div class="fn">${escText(GITHUB_USERNAME)} / README.md</div><h3>${escText(r.heading)}</h3>
