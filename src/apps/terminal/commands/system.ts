@@ -10,7 +10,7 @@ import { register } from "../registry";
 export const HELP: [string, string][] = [
   ["help", "this list"], ["ls [-la] [dir]", "list files"], ["cd <dir>", "change directory"], ["pwd", "where am I"], ["cat <file>", "print a file"], ["tree", "the whole home folder"],
   ["open <path>", "open a file or folder in an app"], ["neofetch", "system info (it's me)"], ["whoami", "short intro"], ["projects", "what I've shipped"], ["experience", "where I've worked"],
-  ["skills", "skill meters"], ["git log", "career as commits"], ["gh", "my GitHub profile"], ["gh repo list", "pinned repos"], ["htop", "process monitor"], ["contact", "how to reach me"], ["resume", "open resume.pdf"],
+  ["skills", "skill meters"], ["git log", "career as commits"], ["gh", "my GitHub profile"], ["gh repo list", "public repos (live)"], ["gh repo view <n>", "one repo + README"], ["htop", "process monitor"], ["contact", "how to reach me"], ["resume", "open resume.pdf"],
   ["theme <name>", "green | amber | cyan | pink | white"], ["matrix", "follow the white rabbit"], ["history", "past commands"], ["clear", "clear screen"], ["exit", "close this terminal"]];
 
 register(
