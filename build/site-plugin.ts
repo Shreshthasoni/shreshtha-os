@@ -11,7 +11,7 @@ import { renderResumePage } from "./resume-page.ts";
 const esc = (s: string) => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
 const TITLE = `${profile.name} · ${profile.title} | Shreshtha OS`;
-const DESCRIPTION = `Portfolio of ${profile.name} (${profile.nick}), a ${profile.title.toLowerCase()} and B.Tech CSE student at ${profile.education.school}, ${profile.city}. Built as a tiny Linux desktop: boot it, open the terminal and type help.`;
+const DESCRIPTION = `Portfolio of ${profile.name} (${profile.nick}), ${profile.title}. B.Tech CSE student at ${profile.education.school}, ${profile.city}. Built as a tiny Linux desktop: boot it, open the terminal and type help.`;
 const OG_ALT = `${profile.name}, ${profile.title}: terminal-style card`;
 
 function seoTags(): string {

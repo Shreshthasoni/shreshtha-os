@@ -53,7 +53,7 @@ export const profile = {
   initials: "SS",
   /** Profile photo in public/ (square; shown cropped to a circle). Set to "" to show the initials instead. */
   photo: "/avatar.jpg",
-  title: "Full-stack developer",
+  title: "AI/ML and software developer",
   city: "Jaipur",
   location: "Jaipur, India",
   line: "B.Tech CSE student at JECRC University, Jaipur. I build products and ship them to real users.",
@@ -141,7 +141,7 @@ export const profile = {
   /** Profile README shown in the GitHub app. **bold** is supported. */
   githubReadme: {
     heading: "Hi, I'm Shreshtha (Keshav)",
-    body: "B.Tech CSE student at JECRC University and full-stack developer. I shipped **Galla** to the Play Store, a **school ERP** that runs in production, and client sites like Micro Path Labs. Ex full-stack intern at **Tagshop.ai**.",
+    body: "B.Tech CSE student at JECRC University and software developer, now going deep into AI/ML. I shipped **Galla** to the Play Store, a **school ERP** that runs in production, and client sites like Micro Path Labs. Ex full-stack intern at **Tagshop.ai**.",
     currently: "Currently: DSA in C++ every day, and going deeper into machine learning.",
     chips: ["C++", "Java", "Python", "JavaScript", "React", "Next.js", "Node.js", "FastAPI", "SQL", "AWS", "Docker", "Git"]
   }

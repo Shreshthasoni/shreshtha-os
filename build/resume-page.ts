@@ -9,7 +9,7 @@ const list = (items: string[]) => `<ul>${items.map(i => `<li>${esc(i)}</li>`).jo
 
 export function renderResumePage(): string {
   const p = profile, c = p.contact;
-  const description = `${p.name} (${p.nick}): ${p.title.toLowerCase()} and B.Tech CSE student at ${p.education.school}, ${p.city}. Experience, projects, skills and contact details.`;
+  const description = `${p.name} (${p.nick}), ${p.title}. B.Tech CSE student at ${p.education.school}, ${p.city}. Experience, projects, skills and contact details.`;
   const jsonLd = {
     "@context": "https://schema.org", "@type": "Person",
     name: p.name, alternateName: p.nick, jobTitle: p.title, email: `mailto:${c.email}`, telephone: c.phone, url: SITE_URL,

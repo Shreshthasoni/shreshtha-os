@@ -37,5 +37,5 @@ export function initDesktop(): void {
   });
   $("#logo").textContent = LOGO.join("\n");
   $("#capgh").textContent = GITHUB_URL.replace("https://", "");
-  $("#capline").textContent = `${profile.name} · ${profile.title.toLowerCase()} · ${profile.city}`;
+  $("#capline").textContent = `${profile.name} · ${profile.title} · ${profile.city}`;
 }
