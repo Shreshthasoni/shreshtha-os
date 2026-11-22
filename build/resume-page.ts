@@ -12,7 +12,7 @@ export function renderResumePage(): string {
   const description = `${p.name} (${p.nick}): ${p.title.toLowerCase()} and B.Tech CSE student at ${p.education.school}, ${p.city}. Experience, projects, skills and contact details.`;
   const jsonLd = {
     "@context": "https://schema.org", "@type": "Person",
-    name: p.name, alternateName: p.nick, jobTitle: p.title, email: `mailto:${c.email}`, url: SITE_URL,
+    name: p.name, alternateName: p.nick, jobTitle: p.title, email: `mailto:${c.email}`, telephone: c.phone, url: SITE_URL,
     address: { "@type": "PostalAddress", addressLocality: p.city, addressCountry: "IN" },
     alumniOf: { "@type": "CollegeOrUniversity", name: p.education.school },
     sameAs: [`https://${c.linkedin}`, GITHUB_URL],
@@ -81,6 +81,7 @@ footer{margin-top:40px;font-size:14px;color:var(--muted)}
 <p class="lead">${esc(p.title)} · B.Tech CSE, ${esc(p.education.school)} · ${esc(p.location)}</p>
 <ul class="contact">
 <li><a href="mailto:${c.email}">${c.email}</a></li>
+<li><a href="tel:${c.phone}">${c.phoneDisplay}</a></li>
 <li><a href="https://${c.linkedin}">${c.linkedin}</a></li>
 <li><a href="${GITHUB_URL}">${c.github}</a></li>
 <li>${esc(c.place)}</li>

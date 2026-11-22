@@ -18,7 +18,7 @@ function seoTags(): string {
   const p = profile, c = p.contact;
   const jsonLd = {
     "@context": "https://schema.org", "@type": "Person",
-    name: p.name, alternateName: p.nick, jobTitle: p.title, url: SITE_URL, email: `mailto:${c.email}`,
+    name: p.name, alternateName: p.nick, jobTitle: p.title, url: SITE_URL, email: `mailto:${c.email}`, telephone: c.phone,
     address: { "@type": "PostalAddress", addressLocality: p.city, addressCountry: "IN" },
     alumniOf: { "@type": "CollegeOrUniversity", name: p.education.school },
     sameAs: [`https://${c.linkedin}`, GITHUB_URL]
@@ -57,7 +57,7 @@ function noscript(): string {
 <p>${esc(p.title)} · B.Tech CSE, ${esc(p.education.school)} · ${esc(p.location)}</p>
 <p>${esc(p.about[0])}</p>
 <p>This interactive portfolio needs JavaScript. <a href="/resume">Read the plain resume</a> or <a href="/resume.pdf">download the PDF</a>.</p>
-<p><a href="mailto:${p.contact.email}">${p.contact.email}</a> · <a href="https://${p.contact.linkedin}">${p.contact.linkedin}</a> · <a href="${GITHUB_URL}">${p.contact.github}</a></p>
+<p><a href="mailto:${p.contact.email}">${p.contact.email}</a> · <a href="tel:${p.contact.phone}">${p.contact.phoneDisplay}</a> · <a href="https://${p.contact.linkedin}">${p.contact.linkedin}</a> · <a href="${GITHUB_URL}">${p.contact.github}</a></p>
 </div></noscript>`;
 }
 

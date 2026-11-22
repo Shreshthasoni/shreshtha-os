@@ -111,6 +111,10 @@ export const profile = {
   } as Record<string, number>,
   contact: {
     email: "shreshtha.soni1111@gmail.com",
+    /** E.164 format, used for tel: links */
+    phone: "+919587136919",
+    /** how the number is shown */
+    phoneDisplay: "+91 95871 36919",
     linkedin: "linkedin.com/in/shreshtha-soni",
     github: GITHUB_URL.replace("https://", ""),
     place: "Jaipur, India · open to relocate"

@@ -61,10 +61,10 @@ register(
   },
   {
     name: "contact", usage: "contact", summary: "how to reach me",
-    description: "Email, LinkedIn, GitHub and location. `mail` opens a message window.",
+    description: "Email, phone, LinkedIn, GitHub and location. `mail` opens a message window.",
     run: () => {
       const c = profile.contact;
-      return `<span class="c-y">email</span>    ${c.email}\n<span class="c-y">linkedin</span> https://${c.linkedin}\n<span class="c-y">github</span>   https://${c.github}\n<span class="c-y">where</span>    ${c.place}\n<span class="c-d">try: mail · gh</span>`;
+      return `<span class="c-y">email</span>    ${c.email}\n<span class="c-y">phone</span>    ${c.phoneDisplay}\n<span class="c-y">linkedin</span> https://${c.linkedin}\n<span class="c-y">github</span>   https://${c.github}\n<span class="c-y">where</span>    ${c.place}\n<span class="c-d">try: mail · gh</span>`;
     }
   },
   {

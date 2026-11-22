@@ -11,7 +11,7 @@ const md = {
   work: (w: Job) => `# ${w.role}\n## ${w.org}\n## ${w.when}\n\n${w.bullets.map(b => "- " + b).join("\n")}\n`,
   proj: (p: Project) => `# ${p.name}\n## ${p.tagline}\nstatus: ${p.status}\n\n${p.bullets.map(b => "- " + b).join("\n")}\n\nstack: ${p.stack.join(", ")}\n`,
   skills: () => "{\n" + Object.entries(profile.skills).map(([k, v]) => `  "${k}": [${v.map(s => `"${s}"`).join(", ")}]`).join(",\n") + "\n}\n",
-  vcf: () => `BEGIN:VCARD\nVERSION:4.0\nFN:${profile.name}\nNICKNAME:${profile.nick}\nTITLE:${profile.title}\nEMAIL:${profile.contact.email}\nURL:https://${profile.contact.linkedin}\nURL:https://${profile.contact.github}\nADR:${profile.contact.place}\nEND:VCARD\n`
+  vcf: () => `BEGIN:VCARD\nVERSION:4.0\nFN:${profile.name}\nNICKNAME:${profile.nick}\nTITLE:${profile.title}\nEMAIL:${profile.contact.email}\nTEL;VALUE=uri:tel:${profile.contact.phone}\nURL:https://${profile.contact.linkedin}\nURL:https://${profile.contact.github}\nADR:${profile.contact.place}\nEND:VCARD\n`
 };
 
 export const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

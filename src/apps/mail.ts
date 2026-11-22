@@ -13,7 +13,7 @@ export function open(): Win {
       body: `<div class="doc"><h2>Write to Shreshtha</h2><p class="sub">Your message opens in your own mail app. Nothing is sent from this page.</p>
       <form class="form"><label>To<input value="${esc(c.email)}" readonly name="to"></label><label>Subject<input name="subject" value="Internship opportunity"></label><label>Message<textarea name="msg">Hi Shreshtha,\n\n</textarea></label>
       <div><button class="btn solid" type="submit">Open in mail app</button><button class="btn copy" type="button">Copy email</button></div></form>
-      <p class="sub" style="margin-top:12px">Or: <a href="https://${c.linkedin}" target="_blank" rel="noopener">${c.linkedin}</a> · <a href="https://${c.github}" target="_blank" rel="noopener">${c.github}</a></p></div>`
+      <p class="sub" style="margin-top:12px">Or: <a href="tel:${c.phone}">${c.phoneDisplay}</a> · <a href="https://${c.linkedin}" target="_blank" rel="noopener">${c.linkedin}</a> · <a href="https://${c.github}" target="_blank" rel="noopener">${c.github}</a></p></div>`
     });
     wireCopy(w.body);
     const form = $<HTMLFormElement>("form", w.body);
