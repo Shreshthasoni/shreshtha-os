@@ -7,7 +7,7 @@ export function open(): Win {
   return openOrFocus("monitor", "mon", () => {
     const w = makeWin({
       app: "monitor", title: "htop — System Monitor", w: 620, h: 470,
-      body: `<div class="mon"><div class="meters"></div><table><thead><tr><th scope="col">PID</th><th scope="col">USER</th><th scope="col">CPU%</th><th scope="col">MEM%</th><th scope="col">TIME+</th><th scope="col">COMMAND</th></tr></thead><tbody></tbody></table><div class="foot"><b>F1</b>help <b>F9</b>kill (disabled: all processes are essential) · uptime ${uptime().short} · tasks ${PROCESSES.length}</div></div>`
+      body: `<div class="mon" tabindex="0" role="region" aria-label="Process list"><div class="meters"></div><table><thead><tr><th scope="col">PID</th><th scope="col">USER</th><th scope="col">CPU%</th><th scope="col">MEM%</th><th scope="col">TIME+</th><th scope="col">COMMAND</th></tr></thead><tbody></tbody></table><div class="foot"><b>F1</b>help <b>F9</b>kill (disabled: all processes are essential) · uptime ${uptime().short} · tasks ${PROCESSES.length}</div></div>`
     });
     const tb = $("tbody", w.body), mtr = $(".meters", w.body);
     const meters = ["CPU0", "CPU1", "Mem", "Swp"];

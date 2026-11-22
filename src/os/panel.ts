@@ -1,5 +1,5 @@
 /** Top panel: launcher button, workspaces, focused window title, tray (GitHub, plain view, cpu, clock). */
-import { $, escText } from "../lib/dom";
+import { $, escText, reduceMotion } from "../lib/dom";
 import { GITHUB_URL, GITHUB_USERNAME } from "../data/profile";
 import { WINS, focused, onWmChange, switchWS, wm } from "./wm";
 import { accentColor } from "./settings";
@@ -35,11 +35,13 @@ export function initPanel(): void {
   tickClock(); setInterval(tickClock, 10000);
 
   const cpu = $<HTMLCanvasElement>("#cpu").getContext("2d")!, cpuV: number[] = Array(30).fill(30);
-  setInterval(() => {
+  const draw = () => {
     if (document.hidden) return;
     cpuV.shift(); cpuV.push(20 + Math.random() * 70);
     cpu.clearRect(0, 0, 60, 16); cpu.strokeStyle = accentColor(); cpu.beginPath();
     cpuV.forEach((v, i) => cpu[i ? "lineTo" : "moveTo"](i * 2, 16 - v / 100 * 15));
     cpu.stroke();
-  }, 500);
+  };
+  if (reduceMotion) { for (let i = 0; i < 30; i++) draw(); } // a still graph, no animation
+  else setInterval(draw, 500);
 }

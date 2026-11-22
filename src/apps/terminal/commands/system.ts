@@ -4,6 +4,7 @@ import { openApp } from "../../registry";
 import { ACCENTS, applySettings, settings } from "../../../os/settings";
 import { runMatrix } from "../../../os/matrix";
 import { closeWin } from "../../../os/wm";
+import { SHORTCUTS } from "../../../os/shortcuts";
 import { getCommand, register } from "../registry";
 
 /** What `help` lists, in order: [usage, summary]. */
@@ -11,7 +12,7 @@ export const HELP: [string, string][] = [
   ["help", "this list"], ["man <command>", "manual for any command"], ["ls [-la] [dir]", "list files"], ["cd <dir>", "change directory"], ["pwd", "where am I"], ["cat <file>", "print a file"], ["tree", "the whole home folder"],
   ["open <path>", "open a file or folder in an app"], ["neofetch", "system info (it's me)"], ["whoami", "short intro"], ["projects", "what I've shipped"], ["experience", "where I've worked"],
   ["skills", "skill meters"], ["git log", "career as commits"], ["gh", "my GitHub profile"], ["gh repo list", "public repos (live)"], ["gh repo view <n>", "one repo + README"], ["htop", "process monitor"], ["contact", "how to reach me"], ["resume", "open resume.pdf"],
-  ["theme <name>", "green | amber | cyan | pink | white"], ["matrix", "follow the white rabbit"], ["cowsay [text]", "a cow says it"], ["history", "past commands"], ["clear", "clear screen"], ["exit", "close this terminal"]];
+  ["theme <name>", "green | amber | cyan | pink | white"], ["matrix", "follow the white rabbit"], ["cowsay [text]", "a cow says it"], ["shortcuts", "keyboard shortcuts"], ["history", "past commands"], ["clear", "clear screen"], ["exit", "close this terminal"]];
 
 /** Extra man pages that aren't commands. */
 const TOPICS: Record<string, { title: string; body: string }> = {
@@ -120,6 +121,11 @@ register(
     name: "matrix", usage: "matrix", summary: "follow the white rabbit",
     description: "Full-screen digital rain for a few seconds. Any key or click stops it. Off when your system prefers reduced motion.",
     run: () => { runMatrix(); return null; }
+  },
+  {
+    name: "shortcuts", usage: "shortcuts", summary: "keyboard shortcuts",
+    description: "Lists the keyboard shortcuts for the desktop. Everything on the desktop can be reached with the keyboard: Tab moves between controls, and a focused window title bar moves with the arrow keys.",
+    run: () => SHORTCUTS.map(([k, d]) => `  <span class="c-acc">${escText(k.padEnd(20))}</span> ${escText(d)}`).join("\n")
   },
   { name: "files", usage: "files", summary: "open the file manager", description: "Opens Files at the current folder.", run: (_a, ctx) => { openApp("files", ctx.cwd); return null; } },
   { name: "settings", usage: "settings", summary: "open Settings", description: "Opens Settings: accent colour, wallpaper, scanlines and the boot animation.", run: () => { openApp("settings"); return null; } },

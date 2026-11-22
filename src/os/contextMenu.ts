@@ -19,6 +19,7 @@ const ITEMS: ([string, string, () => void] | null)[] = [
   }],
   ["Settings", "", () => openApp("settings")],
   null,
+  ["Keyboard shortcuts", "", () => toast("Keyboard shortcuts", "Ctrl+Alt+T terminal · Alt+L launcher · Alt+` next window · Alt+W close · Alt+M minimise · Alt+X maximise · Alt+1–4 workspaces · focus a title bar, then arrows move the window. In the terminal, type: shortcuts")],
   ["About Shreshtha OS", "", () => toast("Shreshtha OS 26.11", "A portfolio by Shreshtha Soni, built as a tiny Linux desktop. No real kernel was harmed.")]
 ];
 

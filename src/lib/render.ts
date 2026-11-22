@@ -8,7 +8,7 @@ export const gitLog = () => COMMITS.map(([h, d, m, r], i) =>
 
 /** Experience entries for the Resume window. */
 export const workHtml = () => profile.work.map(w =>
-  `<div class="it"><div class="ih"><h4>${esc(w.role)}</h4><span class="when">${esc(w.when)}</span></div><p class="org">${esc(w.org)}</p><ul>${w.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul></div>`).join("");
+  `<div class="it"><div class="ih"><h3>${esc(w.role)}</h3><span class="when">${esc(w.when)}</span></div><p class="org">${esc(w.org)}</p><ul>${w.bullets.map(b => `<li>${esc(b)}</li>`).join("")}</ul></div>`).join("");
 
 /** Wire up every not-yet-wired "Copy email" button inside `root`. */
 export function wireCopy(root: ParentNode): void {

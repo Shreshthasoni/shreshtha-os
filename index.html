@@ -8,13 +8,13 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap">
 </head>
 <body>
-<a class="skip-link" href="/resume">Skip to the plain resume</a>
 <!--noscript-->
 <div id="boot" aria-hidden="true"><span class="skip">click or press Esc to skip</span></div>
 <canvas id="matrix" aria-hidden="true"></canvas>
 
 <header id="panel">
-  <button class="pbtn brandbtn" id="brand" type="button" aria-label="Open app launcher" aria-haspopup="dialog" aria-expanded="false"><b aria-hidden="true">●</b> shreshtha-os</button>
+  <a class="skip-link" href="/resume">Skip to the plain resume</a>
+  <button class="pbtn brandbtn" id="brand" type="button" aria-label="shreshtha-os: open app launcher" aria-haspopup="dialog" aria-expanded="false"><b aria-hidden="true">●</b> shreshtha-os</button>
   <div class="ws" id="ws" role="group" aria-label="Workspaces"></div>
   <div class="ptitle" id="ptitle"></div>
   <div class="tray">
@@ -23,7 +23,7 @@
     <span class="hide-s" aria-hidden="true">cpu <canvas id="cpu" width="60" height="16"></canvas></span>
     <span class="hide-s" aria-hidden="true">net <b>▲▼</b></span>
     <span class="hide-s" aria-hidden="true">bat <b>100%</b></span>
-    <b id="clock"></b>
+    <b id="clock" role="timer" aria-live="off"></b>
   </div>
 </header>
 
@@ -35,10 +35,12 @@
 </main>
 <nav id="dock" aria-label="Dock"></nav>
 
+<aside aria-label="Menus and notifications">
 <div id="launch" hidden role="dialog" aria-modal="true" aria-label="App launcher"><div class="lwrap"><input id="lq" placeholder="Search apps and files…" aria-label="Search apps and files"><div class="apps" id="apps"></div></div></div>
 <div id="switcher" hidden role="dialog" aria-modal="true" aria-labelledby="sw-h"><div class="sw-panel"><div class="sw-head"><h2 id="sw-h">Recent apps</h2><button class="sw-all" type="button">Close all</button><button class="sw-done" type="button">Done</button></div><div class="sw-list"></div></div></div>
 <div id="ctx" hidden role="menu"></div>
 <div id="toasts" aria-live="polite"></div>
+</aside>
 
 <script type="module" src="/src/main.ts"></script>
 </body>

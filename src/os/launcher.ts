@@ -45,7 +45,19 @@ export const toggleLauncher = () => (launch.hidden ? showLauncher() : hideLaunch
 export const launcherOpen = () => !launch.hidden;
 
 lq.addEventListener("input", render);
-lq.addEventListener("keydown", e => { if (e.key === "Enter") appsEl.querySelector("button")?.click(); });
+lq.addEventListener("keydown", e => {
+  if (e.key === "Enter") appsEl.querySelector("button")?.click();
+  if (e.key === "ArrowDown") { e.preventDefault(); appsEl.querySelector<HTMLButtonElement>("button")?.focus(); }
+});
+appsEl.addEventListener("keydown", e => {
+  const items = [...appsEl.querySelectorAll<HTMLButtonElement>("button")], i = items.indexOf(document.activeElement as HTMLButtonElement);
+  if (i < 0) return;
+  const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: Math.round(appsEl.clientWidth / items[0].offsetWidth), ArrowUp: -Math.round(appsEl.clientWidth / items[0].offsetWidth) }[e.key];
+  if (!step) return;
+  e.preventDefault();
+  const n = i + step;
+  if (n < 0) lq.focus(); else items[Math.min(n, items.length - 1)].focus();
+});
 launch.addEventListener("click", e => { if (e.target === launch || (e.target as Element).classList.contains("lwrap")) hideLauncher(); });
 launch.addEventListener("keydown", e => {
   trapTab(e, launch);
