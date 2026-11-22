@@ -22,3 +22,4 @@
   .win .wb button[aria-label="Maximise"]{display:none}
   .logo-cap{bottom:76px}
 }
+@media (max-width:760px){.reveal #dock{animation-name:rv-dock-m}}

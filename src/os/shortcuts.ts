@@ -21,7 +21,7 @@ export const SHORTCUTS: [string, string][] = [
 
 export function initShortcuts(): void {
   addEventListener("keydown", e => {
-    if (document.getElementById("boot")) return;
+    if (document.querySelector("#boot:not(.out)")) return;
     const code = e.code;
     if (e.ctrlKey && e.altKey && code === "KeyT") { e.preventDefault(); openApp("terminal"); return; }
     if (e.key === "Escape") { hideLauncher(); closeMenu(); closeSwitcher(); return; }

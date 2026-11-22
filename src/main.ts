@@ -12,7 +12,7 @@ import "./styles/apps.css";
 import "./styles/overlays.css";
 import "./styles/responsive.css";
 
-import { isNarrow } from "./lib/dom";
+import { isNarrow, reduceMotion } from "./lib/dom";
 import { applySettings } from "./os/settings";
 import "./os/matrix";
 import { initPanel } from "./os/panel";
@@ -22,7 +22,7 @@ import "./os/contextMenu";
 import { initShortcuts } from "./os/shortcuts";
 import { toast } from "./os/toast";
 import { boot } from "./os/boot";
-import { desk } from "./os/wm";
+import { desk, type Win } from "./os/wm";
 import { openApp, preload, registerApp } from "./apps/registry";
 import { open as openTerminal } from "./apps/terminal";
 
@@ -36,20 +36,32 @@ initShortcuts();
 // The desktop opens the editor and GitHub at startup on wide screens: fetch their code during the boot animation.
 if (!isNarrow()) preload("editor", ...(desk.clientWidth > 1100 ? ["github" as const] : []));
 
+/** Startup windows float in one after another, after the panel and dock. */
+let winDelay = 0.55;
+const floatIn = (w?: Win) => {
+  if (!w || reduceMotion) return;
+  w.el.style.animation = `rv-win .65s cubic-bezier(.2,.8,.2,1) ${winDelay}s both`;
+  winDelay += 0.15;
+};
+
 async function startDesktop(): Promise<void> {
+  document.body.classList.add("reveal");
+  setTimeout(() => document.body.classList.remove("reveal"), 2600);
   const W = desk.clientWidth;
-  if (isNarrow()) await openApp("terminal", { intro: true });
+  if (isNarrow()) floatIn(await openApp("terminal", { intro: true }));
   else {
     const ed = await openApp("editor", ["about.txt"]);
+    floatIn(ed);
     if (ed) { ed.el.style.left = Math.min(W - 640, W * .5) + "px"; ed.el.style.top = "40px"; }
     if (W > 1100) {
       const gh = await openApp("github");
+      floatIn(gh);
       if (gh) { gh.el.style.left = Math.max(10, W - 860) + "px"; gh.el.style.top = "250px"; }
     }
-    await openApp("terminal", { intro: true, x: 130, y: 90, w: Math.min(760, W - 160), h: 470 });
+    floatIn(await openApp("terminal", { intro: true, x: 130, y: 90, w: Math.min(760, W - 160), h: 470 }));
   }
-  setTimeout(() => toast("Welcome to Shreshtha OS", "Right-click the desktop, open the launcher (top-left) or type help in the terminal."), 400);
-  setTimeout(() => toast("1 new notification", "Shreshtha is open to SDE internships. Try: sudo hire-me"), 2600);
+  setTimeout(() => toast("Welcome to Shreshtha OS", "Right-click the desktop, open the launcher (top-left) or type help in the terminal."), 1400);
+  setTimeout(() => toast("1 new notification", "Shreshtha is open to SDE internships. Try: sudo hire-me"), 3600);
 }
 
 boot(startDesktop);

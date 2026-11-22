@@ -19,3 +19,20 @@
 
 .avatar{position:relative;overflow:hidden}
 .avatar img,.gh-side .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%}
+
+/* login: pieces rise in one after another, then the Log in button wakes up */
+#boot{transition:opacity .5s ease,transform .5s ease}
+#boot.out{opacity:0;transform:scale(1.04);pointer-events:none}
+.login>*{animation:rise .8s cubic-bezier(.2,.8,.2,1) both}
+.login>:nth-child(1){animation-delay:.05s}.login>:nth-child(2){animation-delay:.2s}.login>:nth-child(3){animation-delay:.4s}
+.login>:nth-child(4){animation-delay:.55s}.login>:nth-child(5){animation-delay:.7s}.login>:nth-child(6){animation-delay:.8s}
+.login>:nth-child(7){animation-delay:.9s}.login>:nth-child(8){animation-delay:1s}
+.login .avatar{animation-name:rise-pop}
+.login-btn{width:260px;padding:10px 14px;border:1px solid var(--acc);border-radius:4px;background:transparent;color:var(--acc);font:inherit;font-weight:700;cursor:pointer;transition:background .25s,color .25s,opacity .3s,border-color .3s}
+.login-btn:disabled{opacity:.35;cursor:default;border-color:var(--line);color:var(--muted)}
+.login-btn:not(:disabled){box-shadow:0 0 0 0 var(--acc-dim);animation:rise .8s cubic-bezier(.2,.8,.2,1) .9s both,glow 1.8s ease-in-out infinite}
+.login-btn:not(:disabled):hover,.login-btn:not(:disabled):focus-visible{background:var(--acc);color:#000}
+.plain-link{font-size:12px;color:var(--muted)}
+.plain-link:hover{color:var(--acc)}
+@keyframes rise-pop{from{opacity:0;transform:scale(.6)}70%{transform:scale(1.06)}}
+@keyframes glow{50%{box-shadow:0 0 0 6px var(--acc-dim)}}

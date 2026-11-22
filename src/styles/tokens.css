@@ -18,3 +18,5 @@ a{color:var(--acc)} button{font-family:inherit} ::selection{background:var(--acc
 .skip-link:focus{top:8px}
 .nojs{max-width:720px;margin:0 auto;padding:48px 20px;line-height:1.6;font-size:15px}
 .nojs h1{color:var(--acc);margin:0 0 4px}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}}
+@keyframes fade{from{opacity:0}}

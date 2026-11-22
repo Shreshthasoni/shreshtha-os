@@ -11,3 +11,16 @@
 .dicon:hover,.dicon:focus-visible{background:rgba(255,255,255,.05);border-color:var(--line)}
 .dicon svg{width:34px;height:34px}
 
+
+/* entrance: the desktop assembles itself after login (body.reveal is set for a few seconds by main.ts) */
+@keyframes rv-down{from{transform:translateY(-100%)}}
+@keyframes rv-dock{from{opacity:0;transform:translate(-50%,140%)}}
+@keyframes rv-dock-m{from{transform:translateY(100%)}}
+@keyframes rv-logo{from{opacity:0;filter:blur(10px)}}
+@keyframes rv-win{from{opacity:0;transform:translateY(28px) scale(.95)}}
+.reveal #desk{animation:fade .9s ease-out both}
+.reveal #panel{animation:rv-down .6s cubic-bezier(.2,.8,.2,1) .15s both}
+.reveal #dock{animation:rv-dock .7s cubic-bezier(.2,.8,.2,1) .45s both}
+.reveal .dicon{animation:rise .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(.35s + var(--i,0) * 70ms)}
+.reveal .logo{animation:rv-logo 1.4s ease-out .3s both}
+.reveal .logo-cap{animation:rise .8s ease-out .9s both}

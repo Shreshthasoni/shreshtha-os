@@ -88,13 +88,13 @@ export const profile = {
       name: "Galla", status: "Live on Google Play", tagline: "Business management app for small shop owners",
       bullets: ["Designed, built and published the Android app, from closed testing to public release.", "Backend APIs and relational database, deployed on AWS."],
       stack: ["Android", "REST APIs", "SQL", "AWS"],
-      links: [{ label: "Get it on Google Play", url: "" }] // TODO: Play Store URL
+      links: [{ label: "Get it on Google Play", url: "https://play.google.com/store/apps/details?id=com.gallaapp.galla" }]
     },
     {
       name: "School Management ERP", status: "In production", tagline: "A lean alternative to bloated school ERPs",
       bullets: ["Admin uploads student data once; it stays in sync in real time for teachers and parents.", "Role-based access and fast lookup by student name or roll number."],
       stack: ["Python", "Next.js", "SQL", "Docker", "AWS"],
-      links: [{ label: "Open the live site", url: "" }] // TODO: live URL
+      links: [{ label: "Live app (login)", url: "https://dps.trivyatechnologies.com/login" }]
     },
     {
       name: "Micro Path Labs", status: "Live", tagline: "Test-booking website for a pathology lab (client)",

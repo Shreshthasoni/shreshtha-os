@@ -27,9 +27,10 @@ const LOGO = [
 
 export function initDesktop(): void {
   const icons = $("#icons");
-  ICONS.forEach(([n, ic, app, arg]) => {
+  ICONS.forEach(([n, ic, app, arg], i) => {
     const b = document.createElement("button");
     b.className = "dicon"; b.type = "button";
+    b.style.setProperty("--i", String(i)); // stagger for the entrance animation
     b.innerHTML = IC[ic] + `<span>${n}</span>`;
     b.addEventListener("click", () => openApp(app, arg));
     icons.appendChild(b);
