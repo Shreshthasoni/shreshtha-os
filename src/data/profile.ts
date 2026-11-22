@@ -40,6 +40,11 @@ export interface Project {
   stack: string[];
   /** Public links (download, live site). Entries with an empty url are hidden. */
   links?: { label: string; url: string }[];
+  /**
+   * Set when the code isn't public on GitHub. The project then gets a featured card in the GitHub app
+   * (and shows in `gh repo list`) labelled with this note, linking to its live link instead of the repo.
+   */
+  privateCode?: string;
 }
 
 export const profile = {
@@ -94,13 +99,15 @@ export const profile = {
       name: "Galla", status: "Live on Google Play", tagline: "Business management app for small shop owners",
       bullets: ["Designed, built and published the Android app, from closed testing to public release.", "Backend APIs and relational database, deployed on AWS."],
       stack: ["Android", "REST APIs", "SQL", "AWS"],
-      links: [{ label: "Get it on Google Play", url: "https://play.google.com/store/apps/details?id=com.gallaapp.galla" }]
+      links: [{ label: "Get it on Google Play", url: "https://play.google.com/store/apps/details?id=com.gallaapp.galla" }],
+      privateCode: "Private repo"
     },
     {
       name: "School Management ERP", status: "In production", tagline: "A lean alternative to bloated school ERPs",
       bullets: ["Admin uploads student data once; it stays in sync in real time for teachers and parents.", "Role-based access and fast lookup by student name or roll number."],
       stack: ["Python", "Next.js", "SQL", "Docker", "AWS"],
-      links: [{ label: "Live app (login)", url: "https://dps.trivyatechnologies.com/login" }]
+      links: [{ label: "Live app (login)", url: "https://dps.trivyatechnologies.com/login" }],
+      privateCode: "Private repo · Trivya-Technologies"
     },
     {
       name: "Micro Path Labs", status: "Live", tagline: "Test-booking website for a pathology lab (client)",
@@ -154,12 +161,11 @@ export const COMMITS: [string, string, string, string][] = [
 
 /**
  * Fallback for the GitHub app and `gh repo list` when the GitHub API can't be reached
+ * (Galla and School ERP aren't here: they're private and always shown from `profile.projects`)
  * (offline, rate-limited, or the username is wrong). These link to your profile, not to repos,
  * because the real repo URLs aren't known offline.
  */
 export const FALLBACK_PINS = [
-  { name: "galla", description: "Business management Android app for small shop owners. Live on Google Play.", language: "Android", color: "#3ddc84" },
-  { name: "school-erp", description: "Lean school ERP: upload once, real-time for admins, teachers and parents.", language: "Python · Next.js", color: "#3572A5" },
   { name: "micro-path-labs", description: "Test-booking website for a pathology lab (client project).", language: "React", color: "#61dafb" },
   { name: "shreshtha-os", description: "This portfolio: a tiny Linux desktop in the browser.", language: "TypeScript", color: "#3178c6" }
 ];

@@ -1,6 +1,6 @@
 /** GitHub: profile page for GITHUB_USERNAME with live repositories from the GitHub API. */
 import { $, esc, escText } from "../lib/dom";
-import { GITHUB_URL, GITHUB_USERNAME, profile } from "../data/profile";
+import { GITHUB_URL, GITHUB_USERNAME, profile, projectLinks, type Project } from "../data/profile";
 import { ago, fallbackRepos, getRepos, pinnable, sourceNote, type Repo } from "../services/github";
 import { makeWin, openOrFocus, type Win } from "../os/wm";
 import { avatarImg } from "../lib/render";
@@ -9,6 +9,14 @@ const bold = (s: string) => escText(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
 
 const pinCard = (r: Repo) =>
   `<a class="pin" href="${esc(r.url)}" target="_blank" rel="noopener"><b>${escText(r.name)}</b><span class="d">${escText(r.description || "No description yet.")}</span><span class="lang">${r.language ? `<i style="background:${esc(r.color)}"></i>${escText(r.language)}` : ""}${r.updated ? `<span class="upd">updated ${ago(r.updated)}</span>` : ""}</span></a>`;
+
+/** A featured card for a project whose code is private: links to the live product instead. */
+const privateCard = (p: Project) => {
+  const link = projectLinks(p)[0];
+  const inner = `<b>${escText(p.name)} <span class="lock">🔒 ${escText(p.privateCode!)}</span></b><span class="d">${escText(p.tagline)}. ${escText(p.status)}.</span><span class="lang">${escText(p.stack.join(" · "))}${link ? `<span class="upd">${escText(link.label)} ↗</span>` : ""}</span>`;
+  return link ? `<a class="pin feat" href="${esc(link.url)}" target="_blank" rel="noopener">${inner}</a>` : `<div class="pin feat">${inner}</div>`;
+};
+export const privateProjects = () => profile.projects.filter(p => p.privateCode);
 
 export function open(): Win {
   return openOrFocus("github", "gh", () => {
@@ -25,7 +33,7 @@ export function open(): Win {
           <p>${bold(r.body)}</p>
           <p class="c-d">${escText(r.currently)}</p>
           <div class="chips">${r.chips.map(x => `<span>${escText(x)}</span>`).join("")}</div></div>
-        <p class="gh-h">Repositories</p>
+        <p class="gh-h">Projects &amp; repositories</p>
         <div class="pins" aria-live="polite" aria-busy="true"><p class="c-d">Loading repositories from GitHub…</p></div>
         <p class="c-d gh-note"></p>
       </div></div>`
@@ -44,7 +52,9 @@ export function open(): Win {
         list = fallbackRepos();
         text = `No public repositories on GitHub yet, so these are the projects from this portfolio. The links open the GitHub profile.`;
       }
-      pins.innerHTML = list.map(pinCard).join("");
+      const featured = privateProjects();
+      list = list.slice(0, Math.max(2, 6 - featured.length));
+      pins.innerHTML = featured.map(privateCard).join("") + list.map(pinCard).join("");
       pins.setAttribute("aria-busy", "false");
       const more = res.source !== "fallback" && res.repos.length > list.length ? ` <a href="${GITHUB_URL}?tab=repositories" target="_blank" rel="noopener">All ${res.repos.length} repositories</a>` : "";
       note.innerHTML = escText(text) + more;

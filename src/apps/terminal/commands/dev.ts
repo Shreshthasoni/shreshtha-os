@@ -1,12 +1,17 @@
 /** Developer commands: git, gh (github). `gh repo list` and `gh repo view` use live GitHub data. */
 import { esc, escText } from "../../../lib/dom";
 import { gitLog } from "../../../lib/render";
-import { GITHUB_URL, GITHUB_USERNAME, profile } from "../../../data/profile";
+import { GITHUB_URL, GITHUB_USERNAME, profile, projectLinks } from "../../../data/profile";
 import { ago, getReadme, getRepos, sourceNote } from "../../../services/github";
 import { openApp } from "../../registry";
 import { register } from "../registry";
 
 const note = (s: string) => `<span class="c-d">${escText(s)}</span>`;
+
+const privates = () => profile.projects.filter(p => p.privateCode);
+const privateNote = () => privates().length
+  ? "\n\n" + privates().map(p => `<span class="c-y">🔒 ${escText(p.name)}</span>  <span class="c-d">${escText(p.privateCode!)}. ${escText(p.tagline)}.</span>`).join("\n")
+  : "";
 
 async function repoList(): Promise<string> {
   const res = await getRepos();
@@ -16,13 +21,22 @@ async function repoList(): Promise<string> {
     const full = `${GITHUB_USERNAME}/${r.name}`;
     const tags = [r.fork && "fork", r.archived && "archived"].filter(Boolean).join(", ");
     return `<span class="c-b">${escText(full)}</span>${" ".repeat(Math.max(1, width - full.length))}<span class="c-d">${escText(r.description || "—")}</span>${tags ? ` <span class="c-y">(${tags})</span>` : ""}`;
-  }).join("\n") + "\n\n" + note(sourceNote(res) + " Try: gh repo view <name>");
+  }).join("\n") + privateNote() + "\n\n" + note(sourceNote(res) + " Try: gh repo view <name>");
 }
 
 async function repoView(name: string | undefined, web: boolean): Promise<string> {
   if (!name) return "usage: gh repo view &lt;name&gt; [--web]";
   const res = await getRepos();
   const repo = res.repos.find(r => r.name.toLowerCase() === name.toLowerCase());
+  const words = (t: string) => t.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  const priv = privates().find(p => { const q = words(name), n = words(p.name); return q.length > 0 && q.every(w => n.includes(w)); });
+  if (!repo && priv) {
+    const links = projectLinks(priv);
+    return [`<span class="c-y">${"name".padEnd(12)}</span>${escText(priv.name)}`, `<span class="c-y">${"visibility".padEnd(12)}</span>🔒 ${escText(priv.privateCode!)}`,
+      `<span class="c-y">${"about".padEnd(12)}</span>${escText(priv.tagline)}`, `<span class="c-y">${"stack".padEnd(12)}</span>${escText(priv.stack.join(", "))}`,
+      ...links.map(l => `<span class="c-y">${"live".padEnd(12)}</span><a href="${esc(l.url)}" target="_blank" rel="noopener">${escText(l.label)}</a>`)].join("\n") +
+      "\n\n" + note("The code is private, so there's no repo page to open. More: cat projects/" + priv.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "/README.md");
+  }
   if (!repo) {
     const names = res.repos.map(r => r.name).join(", ");
     return `<span class="c-r">GraphQL: Could not resolve to a Repository with the name '${escText(GITHUB_USERNAME)}/${escText(name)}'.</span>\n` + note(names ? `repos: ${names}` : sourceNote(res));
